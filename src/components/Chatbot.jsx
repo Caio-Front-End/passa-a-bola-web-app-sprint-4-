@@ -19,6 +19,45 @@ export const Chatbot = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Função para chamar a API do Gemini
+  const getGeminiResponse = async (userQuery) => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+    const systemPrompt =
+      'Aja como Tonha, uma assistente de IA amigável e especialista em futebol feminino. Responda às perguntas de forma clara, encorajadora e informativa, sempre focando no universo do futebol praticado por mulheres. Não use markdown em suas respostas.';
+
+    const payload = {
+      contents: [{ parts: [{ text: userQuery }] }],
+      systemInstruction: {
+        parts: [{ text: systemPrompt }],
+      },
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const botText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      return (
+        botText ||
+        'Desculpe, não consegui encontrar uma resposta. Pode tentar perguntar de outra forma?'
+      );
+    } catch (error) {
+      console.error('Erro ao chamar a API do Gemini:', error);
+      return 'Ops! Tive um problema para me conectar. Por favor, tente novamente em alguns instantes.';
+    }
+  };
+
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
@@ -27,24 +66,27 @@ export const Chatbot = () => {
     setInputValue(e.target.value);
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputValue.trim() === '' || isLoading) return;
 
     const userMessage = { sender: 'user', text: inputValue };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    const currentQuery = inputValue; // Guarda a pergunta antes de limpar o input
     setInputValue('');
     setIsLoading(true);
 
-    // Simulando resposta do chatbot enquanto não implemento IA
-    setTimeout(() => {
-      const botResponse = {
-        sender: 'bot',
-        text: 'Essa é uma ótima pergunta! Em breve poderei respondê-la.',
-      };
-      setMessages((prevMessages) => [...prevMessages, botResponse]);
-      setIsLoading(false);
-    }, 1500);
+    // --- LÓGICA DA IA REAL ---
+    const botResponseText = await getGeminiResponse(currentQuery);
+
+    const botResponse = {
+      sender: 'bot',
+      text: botResponseText,
+    };
+
+    setMessages((prevMessages) => [...prevMessages, botResponse]);
+    setIsLoading(false);
   };
 
   if (!isOpen) {
@@ -62,17 +104,17 @@ export const Chatbot = () => {
   return (
     <div
       className="
-  fixed 
-  bottom-13 right-0 sm:bottom-6 sm:right-6
-  w-[95vw] sm:max-w-sm
-  h-[70vh] max-h-[600px]
-  bg-white dark:bg-gray-800
-  rounded-t-lg sm:rounded-lg
-  shadow-2xl
-  flex flex-col font-sans
-  transition-all duration-300 ease-out transform
-  scale-95 opacity-0 animate-[fadeInUp_0.3s_ease-out_forwards]
-"
+        fixed 
+        bottom-13 right-0 sm:bottom-6 sm:right-6
+        w-[95vw] sm:max-w-sm
+        h-[70vh] max-h-[600px]
+        bg-white dark:bg-gray-800
+        rounded-t-lg sm:rounded-lg
+        shadow-2xl
+        flex flex-col font-sans
+        transition-all duration-300 ease-out transform
+        scale-95 opacity-0 animate-[fadeInUp_0.3s_ease-out_forwards]
+      "
     >
       {/* Cabeçalho */}
       <header className="bg-[#b554b5] text-white p-4 flex justify-between items-center rounded-t-lg">
