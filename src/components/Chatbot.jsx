@@ -25,7 +25,7 @@ export const Chatbot = () => {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
     const systemPrompt =
-      'Aja como Tonha, uma assistente de IA amigável e especialista em futebol feminino. Responda às perguntas de forma clara, encorajadora e informativa, sempre focando no universo do futebol praticado por mulheres. Não use markdown em suas respostas.';
+      'Aja como Tonha, uma assistente de IA amigável e especialista em futebol feminino. Suas respostas devem ser curtas e objetivas, com no máximo 3 frases. Foque sempre no universo do futebol praticado por mulheres. Não use markdown em suas respostas.';
 
     const payload = {
       contents: [{ parts: [{ text: userQuery }] }],
