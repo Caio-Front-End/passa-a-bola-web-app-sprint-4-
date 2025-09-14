@@ -1,5 +1,6 @@
 import { Trophy, ShieldCheck, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import AgendaCalendario from '../components/AgendaCalendario';
 
 const HubPage = () => {
   const { currentUser } = useAuth();
@@ -54,6 +55,17 @@ const HubPage = () => {
         {/* Coluna Principal */}
         <div className="lg:col-span-2 space-y-6">
           {/* Próximo Jogo */}
+
+            <h2 className="font-semibold text-2xl mb-3 text-gray-900 dark:text-white">
+              Calendário de Jogos
+            </h2>
+
+          <AgendaCalendario /> 
+
+                      <h2 className="font-semibold text-2xl mb-3 text-gray-900 dark:text-white">
+              Próximo Jogo
+            </h2>
+
           <div className="bg-[#b554b5] text-white p-5 rounded-lg shadow-lg flex items-center space-x-4">
             <div className="text-center">
               <p className="text-4xl font-bold">{nextGame.day}</p>
