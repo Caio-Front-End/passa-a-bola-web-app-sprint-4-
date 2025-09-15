@@ -5,6 +5,11 @@ import AgendaCalendario from '../components/AgendaCalendario';
 import CopaBravasModal from '../components/CopaBravasModal';
 import LigaDasEstrelasModal from '../components/LigaDasEstrelasModal';
 
+// IMPORTAÇÃO DAS IMAGENS LOCAIS COM OS NOVOS NOMES
+import fotoEquipe1 from '../assets/img/FotoEquipe1.png'; // Caminho para a primeira imagem
+import fotoEquipe2 from '../assets/img/FotoEquipe2.png'; // Caminho para a segunda imagem
+
+
 const HubPage = () => {
   const { currentUser } = useAuth();
   const [activeModal, setActiveModal] = useState(null);
@@ -28,8 +33,20 @@ const HubPage = () => {
   ];
 
   const currentChampionships = [
-    { name: 'Copa Bravas', progress: 75, modal: 'copaBravas' },
-    { name: 'Liga das Estrelas', progress: 40, modal: 'ligaDasEstrelas' },
+    {
+      name: 'Liga das Campeãs',
+      progress: 75,
+      modal: 'copaBravas',
+      phase: 'Semi-Finais',
+      image: fotoEquipe1, // Usando a primeira imagem importada
+    },
+    {
+      name: 'Passa a Bola',
+      progress: 40,
+      modal: 'ligaDasEstrelas',
+      phase: 'Fase de Grupos',
+      image: fotoEquipe2, // Usando a segunda imagem importada
+    },
   ];
 
   const nextGame = {
@@ -91,21 +108,29 @@ const HubPage = () => {
                   <button
                     key={champ.name}
                     onClick={() => handleOpenModal(champ.modal)}
-                    className="w-full text-left bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[#b554b5] transition-all duration-300"
+                    className="w-full text-left bg-white dark:bg-gray-800 rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[#b554b5] transition-all duration-300 overflow-hidden hover:scale-101"
                   >
-                    <div className="flex justify-between items-center mb-1">
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                    {/* Imagem do Campeonato */}
+                    <div className="w-full h-48 md:h-56 lg:h-64 overflow-hidden rounded-t-lg">
+                      <img
+                        src={champ.image}
+                        alt={`Time do campeonato ${champ.name}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <p className="font-semibold text-gray-900 dark:text-white mb-1">
                         {champ.name}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {champ.progress}%
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        {champ.phase}
                       </p>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                      <div
-                        className="bg-[#b554b5] h-2.5 rounded-full"
-                        style={{ width: `${champ.progress}%` }}
-                      ></div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <div
+                          className="bg-[#b554b5] h-2.5 rounded-full"
+                          style={{ width: `${champ.progress}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </button>
                 ))}
