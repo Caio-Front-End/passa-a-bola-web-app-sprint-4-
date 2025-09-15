@@ -103,8 +103,8 @@ const LigaDasEstrelasModal = ({ onClose }) => {
   return (
     <ModalWrapper title="Liga das Estrelas - Tabela" onClose={onClose}>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 bg-white/10 dark:bg-gray-600/10 backdrop-blur-sm border border-white/20 dark:border-gray-700 rounded-xl shadow-lg">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/35 dark:text-gray-300">
             <tr>
               <th scope="col" className="px-4 py-3">
                 Pos
@@ -148,7 +148,7 @@ const LigaDasEstrelasModal = ({ onClose }) => {
             {tableData.map((row) => (
               <tr
                 key={row.pos}
-                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                className="bg-white border-b dark:bg-gray-800/30 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
                 <td className="px-4 py-4 font-medium text-gray-900 dark:text-white">
                   {row.pos}

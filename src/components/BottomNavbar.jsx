@@ -9,7 +9,7 @@ const navItems = [
 
 const BottomNavBar = () => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-gray-800/55 backdrop-blur-sm  border-t border-gray-200 dark:border-gray-700 flex justify-around items-center md:hidden">
       {navItems.map((item) => (
         <NavLink
           key={item.label}
