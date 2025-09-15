@@ -20,18 +20,26 @@ export const Chatbot = () => {
   }, [messages]);
 
   // Função para chamar a API do Gemini
-  const getGeminiResponse = async (userQuery) => {
+  const getGeminiResponse = async (chatHistory) => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
     const systemPrompt =
-      'Você é Tonha, uma assistente de IA especialista em futebol feminino, com uma personalidade amigável e informativa. Seu conhecimento é vasto e sempre atualizado. Para fornecer informações precisas e confiáveis, consulte e priorize dados de fontes oficiais, como sites de federações (FIFA, UEFA, CONMEBOL, CBF), ligas oficiais (NWSL, Brasileirão Feminino) e veículos de imprensa esportiva com cobertura dedicada e respeitável sobre a modalidade. Suas respostas devem ser curtas, diretas e conter no máximo 3 frases. Se não tiver certeza sobre uma informação ou se os dados forem conflitantes, prefira indicar que a informação não pôde ser confirmada. Não use markdown.';
+      'Aja como Tonha, uma assistente de IA amigável e especialista em futebol feminino. Suas respostas devem ser curtas e objetivas, com no máximo 3 frases. Foque sempre no universo do futebol praticado por mulheres. Não use markdown em suas respostas.';
+
+    // MELHORIA 1: Mapeia o histórico do chat para o formato da API
+    const contents = chatHistory.map((msg) => ({
+      role: msg.sender === 'bot' ? 'model' : 'user',
+      parts: [{ text: msg.text }],
+    }));
 
     const payload = {
-      contents: [{ parts: [{ text: userQuery }] }],
+      contents: contents, // Envia o histórico completo
       systemInstruction: {
         parts: [{ text: systemPrompt }],
       },
+      // MELHORIA 2: Habilita a pesquisa no Google para maior precisão
+      tools: [{ google_search: {} }],
     };
 
     try {
@@ -71,14 +79,14 @@ export const Chatbot = () => {
     if (inputValue.trim() === '' || isLoading) return;
 
     const userMessage = { sender: 'user', text: inputValue };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    const currentQuery = inputValue; // Guarda a pergunta antes de limpar o input
+    // Cria o novo histórico de mensagens ANTES de enviar para a API
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
 
-    // --- LÓGICA DA IA REAL ---
-    const botResponseText = await getGeminiResponse(currentQuery);
+    // Envia o histórico atualizado para a IA
+    const botResponseText = await getGeminiResponse(newMessages);
 
     const botResponse = {
       sender: 'bot',
