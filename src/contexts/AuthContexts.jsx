@@ -1,15 +1,16 @@
-import React, { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Tenta carregar o usuário do localStorage ao iniciar
     try {
       const user = localStorage.getItem('currentUser');
       if (user) {
@@ -23,17 +24,30 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (email, password) => {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(
-      (u) => u.email === email && u.password === password,
-    );
-    if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      setCurrentUser(user);
-      navigate('/');
-      return user;
-    }
-    return null;
+    return new Promise((resolve, reject) => {
+      setIsLoggingIn(true);
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(
+        (u) => u.email === email && u.password === password,
+      );
+
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        setCurrentUser(user);
+
+        // 4. Simula o carregamento e depois navega
+        setTimeout(() => {
+          navigate('/');
+          // Desativa o carregamento
+          setIsLoggingIn(false);
+          resolve(user);
+          // Duração
+        }, 2500);
+      } else {
+        setIsLoggingIn(false);
+        reject(new Error('E-mail ou senha inválidos.'));
+      }
+    });
   };
 
   const register = (name, email, password) => {
@@ -56,10 +70,16 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     loading,
+    isLoggingIn,
     login,
     register,
     logout,
   };
+
+  //Se estiver carregando, mostra a tela de carregamento
+  if (isLoggingIn) {
+    return <LoadingScreen />;
+  }
 
   return (
     <AuthContext.Provider value={value}>
