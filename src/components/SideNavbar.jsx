@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { Home, Map, Video, Trophy, LogOut } from 'lucide-react';
+import logoPabOriginal from '../assets/img/logo-pab-original.png';
 
 const navItems = [
   { path: '/', icon: <Home />, label: 'Hub' },
@@ -19,9 +20,13 @@ const SideNavBar = () => {
   return (
     <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
       <div className="flex items-center gap-2 mb-8">
-        <Trophy size={32} className="text-[#b554b5]" />
+        <img
+          src={logoPabOriginal}
+          alt="Logo da Aplicação"
+          className="w-8 h-8 sm:w-10 sm:h-10 transition-all duration-300 dark:brightness-0 dark:invert"
+        />
         <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-          BEM-VINDA
+          P.A.B
         </h1>
       </div>
       <nav className="flex-grow">
