@@ -19,15 +19,15 @@ const LoadingScreen = () => {
           <div className="absolute w-full h-full rounded-full border-4 border-transparent border-t-[#b554b5] animate-spin"></div>
 
           {/* Círculo branco interno, gira em sentido anti-horário */}
-          <div className="absolute w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full border-4 border-transparent border-t-white/80 animate-spin-reverse"></div>
+          <div className="absolute w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full border-4 border-transparent border-t-black dark:border-t-white/80 animate-spin-reverse"></div>
 
           {/* logo */}
           <img
             src={logoPab}
             alt="Logo da aplicação"
             // Tamanho base para mobile
-            className="w-22 h-22 transition-all duration-300 
-                       invert grayscale brightness-50 
+            className="p-2 w-22 h-22 transition-all duration-300 
+                       invert grayscale brightness-100 
                        dark:invert-0 dark:grayscale-0 dark:brightness-100"
           />
         </div>
