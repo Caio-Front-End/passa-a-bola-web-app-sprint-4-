@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import SideNavBar from './SideNavBar.jsx';
+import SideNavBar from './SideNavbar.jsx';
 import BottomNavBar from './BottomNavBar.jsx';
 import Chatbot from './Chatbot.jsx';
 import MobileHeader from './MobileHeader.jsx';
