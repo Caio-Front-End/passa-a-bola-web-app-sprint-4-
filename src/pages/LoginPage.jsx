@@ -29,7 +29,7 @@ const LoginPage = () => {
           <img
             src={logoPabOriginal}
             alt="Logo da Aplicação"
-            className="mx-auto w-22 h-22 sm:w-26 sm:h-26"
+            className="mx-auto w-22 h-22 sm:w-26 sm:h-26 transition-all duration-300 dark:brightness-0 dark:invert"
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Acesse sua conta
