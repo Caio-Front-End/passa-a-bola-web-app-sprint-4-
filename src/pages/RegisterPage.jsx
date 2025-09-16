@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { User, Mail, Lock, Trophy } from 'lucide-react';
+import SeletorAdmin from '../components/SeletorAdmin.jsx';
+
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -37,6 +39,7 @@ const RegisterPage = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Crie sua conta
           </h2>
+          <SeletorAdmin />
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
