@@ -1,4 +1,8 @@
+// Caminho: src/pages/CourtsPage.jsx
+
 import { Map, ArrowRight } from 'lucide-react';
+// MUDANÇA 1: Importar a imagem local
+import mapaQuadras from '../assets/img/QuadrasImagem.png';
 
 const CourtsPage = () => {
   const championships = [
@@ -47,8 +51,9 @@ const CourtsPage = () => {
       </h1>
 
       <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-gray-300 dark:bg-gray-800 mb-8 shadow-lg">
+        {/* MUDANÇA 2: Usar a variável da imagem importada no 'src' */}
         <img
-          src="https://www.google.com/maps/d/u/0/thumbnail?mid=1_zzQAP0QZ_1Y9xGVchQpW2F0-l0&hl=en"
+          src={mapaQuadras}
           className="w-full h-full object-cover opacity-70"
           alt="Mapa de quadras"
         />
