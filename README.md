@@ -59,7 +59,7 @@ Este projeto foi construído utilizando tecnologias de ponta do ecossistema Java
 
 - **Context API + Hooks:** Para gerenciamento de estado global, como a autenticação do usuário.
 
-- **Date-fns** Biblioteca JavaScript para manipular, formatar e realizar cálculos com datas e horas, oferecendo uma ampla gama de funções utilitárias como adicionar ou subtrair dias, comparar datas, formatá-las em diversos padrões.
+- **Date-fns:** Biblioteca JavaScript para manipular, formatar e realizar cálculos com datas e horas, oferecendo uma ampla gama de funções utilitárias como adicionar ou subtrair dias, comparar datas, formatá-las em diversos padrões.
 
 ---
 
