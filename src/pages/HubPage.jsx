@@ -9,7 +9,6 @@ import LigaDasEstrelasModal from '../components/LigaDasEstrelasModal';
 import fotoEquipe1 from '../assets/img/FotoEquipe1.png'; // Caminho para a primeira imagem
 import fotoEquipe2 from '../assets/img/FotoEquipe2.png'; // Caminho para a segunda imagem
 
-
 const HubPage = () => {
   const { currentUser } = useAuth();
   const [activeModal, setActiveModal] = useState(null);
@@ -37,15 +36,15 @@ const HubPage = () => {
       name: 'Liga das Campeãs',
       progress: 75,
       modal: 'copaBravas',
-      phase: 'Semi-Finais',
-      image: fotoEquipe1, // Usando a primeira imagem importada
+      phase: 'Quartas de Final',
+      image: fotoEquipe1,
     },
     {
       name: 'Passa a Bola',
       progress: 40,
       modal: 'ligaDasEstrelas',
-      phase: 'Fase de Grupos',
-      image: fotoEquipe2, // Usando a segunda imagem importada
+      phase: 'Pontos Corridos',
+      image: fotoEquipe2,
     },
   ];
 
