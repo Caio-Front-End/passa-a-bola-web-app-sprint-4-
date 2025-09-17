@@ -20,6 +20,30 @@
 
 ---
 
+## 🤖 ChatBot - Tonha Ai
+A alma da assistente "Tonha" reside em sua integração com tecnologias de IA de ponta e em uma configuração segura para acesso à API.
+
+- **Modelo de IA**
+O chatbot é potencializado pelo Google Gemini 2.5 Flash, um modelo de linguagem rápido e eficiente. Ele é o responsável por processar as perguntas e gerar as respostas com a personalidade da "Tonha", focada no universo do futebol feminino.
+
+- **Contexto e Buscas em Tempo Real**
+Para que a conversa seja fluida e coerente, a implementação utiliza duas técnicas importantes:
+
+- **Manutenção de Contexto**
+A assistente não lê apenas a última pergunta. A cada nova mensagem, todo o histórico do chat é enviado para a IA. Isso permite que ela se "lembre" do que foi dito antes e forneça respostas que façam sentido na conversa.
+
+- **Busca em Tempo Real**
+Para fornecer dados atualizados sobre jogos recentes, estatísticas ou notícias, a assistente foi configurada para realizar buscas no Google em tempo real. Isso garante que as informações sejam sempre precisas e relevantes.
+
+- **Ponto de Acesso à API** (Vercel)
+A segurança é uma prioridade. A chave de acesso para a API do Gemini não está exposta no código-fonte. Ela é gerenciada como uma Variável de Ambiente (Environment Variable) diretamente na plataforma da Vercel.
+
+- **Variável de Ambiente:** VITE_GEMINI_API_KEY
+
+Dessa forma, o "segredo" de acesso fica protegido no ambiente de hospedagem, e o código-fonte pode ser compartilhado publicamente sem riscos de segurança.
+
+---
+
 ## 🚀 Tecnologias Utilizadas
 
 Este projeto foi construído utilizando tecnologias de ponta do ecossistema JavaScript:
