@@ -4,12 +4,10 @@ const ModalWrapper = ({ children, onClose, title }) => {
   return (
     <div
       onClick={onClose}
-      // O backdrop já tem um blur, o que é ótimo!
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        // ALTERAÇÃO APLICADA AQUI 👇
         className="bg-white/10 dark:bg-gray-600/10 backdrop-blur-sm border border-white/20 dark:border-gray-700 rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col scale-95 opacity-70 animate-[fadeInUp_0.3s_ease-out_forwards]"
       >
         <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
