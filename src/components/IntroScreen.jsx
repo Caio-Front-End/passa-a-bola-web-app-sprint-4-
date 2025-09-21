@@ -39,7 +39,7 @@ const IntroScreen = ({ onFinish }) => {
     return (
         <div className="h-dvh w-screen overflow-hidden bg-[#0d0d0d] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
             
-            <div className="relative w-full h-[70%] md:w-2/3 md:h-full">
+            <div className="relative w-full h-[65%] md:w-2/3 md:h-full">
                 <div className="absolute inset-0">
                     {slidesData.map((slide, index) => {
                         const isActive = currentSlide === index;
@@ -61,7 +61,7 @@ const IntroScreen = ({ onFinish }) => {
             </div>
 
             {/* Bloco de Conteúdo Direito (Desktop) / Baixo (Mobile) */}
-            <div className="relative w-full h-[30%] flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
+            <div className="relative w-full h-[35%] flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
                 
                 {/* Bloco de Conteúdo para Desktop (escondido no mobile) */}
                 <div className="hidden md:flex flex-col w-full h-full">
@@ -113,7 +113,7 @@ const IntroScreen = ({ onFinish }) => {
                                 <button key={index} onClick={() => handleDotClick(index)} className={`h-2 rounded-full transition-all duration-300 ${currentSlide === index ? 'bg-[#b554b5] w-6' : 'bg-gray-400 w-2'}`} />
                             ))}
                         </div>
-                        <div className="flex items-center justify-between w-full mt-2">
+                        <div className="flex items-center justify-between w-full mb-8 px-4">
                             {currentSlide !== totalSlides - 1 && (
                                 <button 
                                     onClick={handleSkip} 
