@@ -4,11 +4,15 @@ import { useAuth } from '../hooks/useAuth.js';
 import { Mail, Lock, Trophy } from 'lucide-react';
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
 
+import { IntroScreen } from '../components/IntroScreen.jsx';
+
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, isLoggingIn } = useAuth();
+  const [showIntro, setShowIntro] = useState(true);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,6 +25,10 @@ const LoginPage = () => {
       setError(err.message);
     }
   };
+
+  if (showIntro) {
+    return <IntroScreen onFinish={() => setShowIntro(false)} />;
+  }
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-4">
