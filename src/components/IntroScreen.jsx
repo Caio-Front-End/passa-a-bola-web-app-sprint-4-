@@ -37,10 +37,9 @@ const IntroScreen = ({ onFinish }) => {
     const handleDotClick = (index) => setCurrentSlide(index);
 
     return (
-        <div className="h-screen w-screen overflow-hidden bg-[#0d0d0d] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-dvh w-screen overflow-hidden bg-[#0d0d0d] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
             
-            {/* Bloco de Mídia Esquerdo (Desktop) / Topo (Mobile) */}
-            <div className="relative w-full h-[75%] md:w-3/10 md:h-full">
+            <div className="relative w-full h-[70%] md:w-2/3 md:h-full">
                 <div className="absolute inset-0">
                     {slidesData.map((slide, index) => {
                         const isActive = currentSlide === index;
@@ -58,23 +57,19 @@ const IntroScreen = ({ onFinish }) => {
                         return null;
                     })}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-30 bg-gradient-to-t from-[#0d0d0d] via-[#0d0d0d]/70 to-transparent md:hidden"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d0d0d] via-[#0d0d0d]/80 to-transparent md:hidden"></div>
             </div>
 
             {/* Bloco de Conteúdo Direito (Desktop) / Baixo (Mobile) */}
-            <div className="relative flex-1 flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
+            <div className="relative w-full h-[30%] flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
                 
                 {/* Bloco de Conteúdo para Desktop (escondido no mobile) */}
                 <div className="hidden md:flex flex-col w-full h-full">
-                    {/* Bloco de Texto (agora cresce e centraliza o conteúdo) */}
                     <div className="flex-grow flex flex-col justify-center animate-fade-in">
                         <h2 className="text-4xl font-bold mb-3">{slidesData[currentSlide].title}</h2>
                         <p className="text-gray-400 text-base">{slidesData[currentSlide].description}</p>
                     </div>
-
-                    {/* Bloco de Navegação (Botões + Filmstrip) */}
                     <div>
-                         {/* Botões de Ação */}
                         <div className="flex items-center space-x-4">
                             <button 
                                 onClick={handleNext} 
@@ -82,7 +77,6 @@ const IntroScreen = ({ onFinish }) => {
                             >
                                 {currentSlide === totalSlides - 1 ? 'Concluir' : 'Próximo'}
                             </button>
-                            {/* Botão Pular Condicional com Animação */}
                             {currentSlide !== totalSlides - 1 && (
                                 <button 
                                     onClick={handleSkip} 
@@ -91,8 +85,6 @@ const IntroScreen = ({ onFinish }) => {
                                 </button>
                             )}
                         </div>
-
-                        {/* Filmstrip de Navegação */}
                         <div className="flex flex-col items-start mt-8">
                             <p className="text-sm font-semibold text-gray-500 mb-3">NAVEGAR</p>
                             <div className="flex items-center space-x-3">
@@ -108,7 +100,7 @@ const IntroScreen = ({ onFinish }) => {
                 </div>
 
                 {/* Conteúdo e Navegação Mobile (escondido no desktop) */}
-                <div className="w-full max-w-md flex flex-col justify-between flex-1 py-4 md:hidden">
+                <div className="w-full max-w-md flex flex-col justify-between h-full py-4 md:hidden">
                     <div className="w-full mx-auto">
                         <div className="animate-fade-in">
                             <h2 className="text-2xl font-bold mb-2">{slidesData[currentSlide].title}</h2>
