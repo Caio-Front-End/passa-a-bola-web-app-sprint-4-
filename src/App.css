@@ -1,0 +1,30 @@
+/* Para garantir que o app ocupe a tela toda */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Adicionando um estilo de scroll mais sutil para o feed FINTA */
+.snap-mandatory::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* make scrollbar transparent */
+}
+
+/* Chatbot (animação) */
+
+/* Animação para o chatbot ao clicar */
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@import 'tailwindcss'
