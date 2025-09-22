@@ -9,9 +9,9 @@ const slidesData = [
     // Seus dados de slides (sem alterações)
     { type: 'video', src: introVideoHub, alt: 'Jogadoras em frente a um gol de futebol.', title: 'Um Hub só para você!', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' },
     { type: 'video', src: introVideoQuadras, alt: 'Mulher deitada na grama de um campo de futebol.', title: 'Encontre quadras!', description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
-    { type: 'video', src: introVideoTonha, title: 'Tire suas ideias com a tonha!', description: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+    { type: 'video', src: introVideoTonha, title: 'Tire suas ideias com a tonha!', description: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur, ut enim ad minim veniam.' },
     { type: 'image', src: introFotoFinta, alt: 'Jogadora se preparando para chutar.', title: 'Publique e compartilhe!', description: 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' },
-    { type: 'image', src: introFotoFinal, alt: 'Jogadora correndo com a bola.', title: 'Voe mais alto!', description: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.' }
+    { type: 'image', src: introFotoFinal, alt: 'Jogadora correndo com a bola.', title: 'Voe mais alto!', description: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque ut enim ad minim veniam laudantium.' }
 ];
 
 const IntroScreen = ({ onFinish }) => {
@@ -37,7 +37,7 @@ const IntroScreen = ({ onFinish }) => {
     const handleDotClick = (index) => setCurrentSlide(index);
 
     return (
-        <div className="h-dvh w-screen overflow-hidden bg-[#0d0d0d] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-dvh w-screen overflow-hidden bg-[#0d0c11] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
             
             <div className="relative w-full h-[65%] md:w-2/3 md:h-full">
                 <div className="absolute inset-0">
@@ -57,7 +57,7 @@ const IntroScreen = ({ onFinish }) => {
                         return null;
                     })}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d0d0d] via-[#0d0d0d]/80 to-transparent md:hidden"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d0c11] via-[#0d0c11]/80 to-transparent md:hidden"></div>
             </div>
 
             {/* Bloco de Conteúdo Direito (Desktop) / Baixo (Mobile) */}
