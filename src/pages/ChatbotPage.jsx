@@ -58,21 +58,21 @@ const ChatbotPage = () => {
                     {messages.map((msg, index) => (
                         <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                             {msg.sender === 'bot' && (
-                                <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                <div className="w-8 h-8 bg-[var(--bg-color2)] rounded-full flex items-center justify-center flex-shrink-0">
                                     <Bot size={20} className="text-gray-300" />
                                 </div>
                             )}
-                            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[var(--primary-color)] text-white rounded-br-none' : 'bg-gray-700 text-gray-200 rounded-bl-none'}`}>
+                            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[var(--primary-color)] text-white rounded-br-none' : 'bg-[var(--bg-color2)] text-gray-200 rounded-bl-none'}`}>
                                 {msg.text}
                             </div>
                         </div>
                     ))}
                     {isLoading && (
                         <div className="flex items-end gap-2 justify-start">
-                            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 bg-[var(--bg-color2)] rounded-full flex items-center justify-center flex-shrink-0">
                                 <Bot size={20} className="text-gray-300" />
                             </div>
-                            <div className="max-w-[80%] p-3 rounded-2xl bg-gray-700">
+                            <div className="max-w-[80%] p-3 rounded-2xl bg-[var(--bg-color2)]">
                                 <div className="flex items-center gap-1.5">
                                     <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                                     <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -91,7 +91,7 @@ const ChatbotPage = () => {
                         value={inputValue}
                         onChange={handleInputChange}
                         placeholder="Pergunte sobre futebol feminino..."
-                        className="w-full pl-4 pr-12 py-3 bg-gray-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
+                        className="w-full pl-4 pr-12 py-3 bg-[var(--bg-color2)] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
                         disabled={isLoading}
                     />
                     <button

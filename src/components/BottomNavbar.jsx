@@ -60,7 +60,7 @@ const BottomNavBar = () => {
                 </div>
             )}
 
-            <div className="relative flex h-16 items-center justify-around rounded-full border border-[var(--bg-color2)] bg-[var(--bg-color)]/70 backdrop-blur-xl shadow-lg">
+            <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
                 <div className="flex justify-around items-center w-full h-full px-2">
                     {/* Itens da Esquerda (Hub, Quadras) */}
                     {navItems.slice(0, 2).map((item) => (
@@ -92,7 +92,7 @@ const BottomNavBar = () => {
                     to={chatbotItem.path}
                     className={({ isActive }) => 
                         `absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
-                            isActive ? 'bg-[var(--primary-color)] text-black' : 'bg-[var(--bg-color2)] text-gray-300'
+                            isActive ? 'bg-[var(--primary-color-hover)] text-gray-300' : 'bg-[var(--primary-color)] text-black'
                         }`
                     }
                 >

@@ -26,7 +26,7 @@ const CourtsPage = () => {
     },
     {
       id: 3,
-      name: 'Copinha Churrasco de Gato',
+      name: 'Copinha Churrasco',
       court:
         'SED Itaquerense - R. Antônio Soares Lara, 135 - Vila Carmosina, São Paulo - SP, 08210-060',
       date: '02 OUT',
@@ -45,12 +45,12 @@ const CourtsPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-full">
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+    <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
+      <h1 className="text-3xl font-bold mb-6 text-white">
         Central de Quadras
       </h1>
 
-      <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-gray-300 dark:bg-gray-800 mb-8 shadow-lg">
+      <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-[var(--bg-color2)] mb-8 shadow-lg">
         {/* MUDANÇA 2: Usar a variável da imagem importada no 'src' */}
         <img
           src={mapaQuadras}
@@ -66,7 +66,7 @@ const CourtsPage = () => {
         </div>
       </div>
 
-      <h2 className="font-semibold text-2xl mb-4 text-gray-900 dark:text-white">
+      <h2 className="font-semibold text-2xl mb-4 ttext-white">
         Campeonatos Próximos
       </h2>
 
@@ -74,26 +74,26 @@ const CourtsPage = () => {
         {championships.map((champ) => (
           <div
             key={champ.id}
-            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex items-center space-x-4 hover:shadow-lg hover:border-[#b554b5] border border-transparent transition-all"
+            className="bg-[var(--bg-color2)] p-4 rounded-lg shadow-md flex items-center space-x-4 hover:shadow-lg hover:border-[var(--primary-color)] border border-transparent transition-all"
           >
-            <div className="text-center bg-[#FF800080] text-orange-900 dark:text-orange-100 rounded-lg p-3">
+            <div className="text-center bg-[var(--primary-color)] text-white rounded-lg p-3">
               <p className="font-bold text-xl">{champ.date.split(' ')[0]}</p>
               <p className="text-xs font-semibold">
                 {champ.date.split(' ')[1]}
               </p>
             </div>
             <div className="flex-grow">
-              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+              <h3 className="font-bold text-lg text-gray-200">
                 {champ.name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-400">
                 {champ.court}
               </p>
               <div className="flex items-center text-xs mt-2 space-x-3">
-                <span className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">
+                <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300">
                   {champ.format}
                 </span>
-                <span className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">
+                <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300">
                   {champ.capacity}
                 </span>
               </div>

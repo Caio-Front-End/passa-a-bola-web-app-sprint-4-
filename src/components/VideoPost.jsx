@@ -90,7 +90,7 @@ const VideoPost = ({ videoData }) => {
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-white bg-gradient-to-t from-black/60 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-2 text-white bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center mb-2">
           <img
             src={videoData.user.avatar}
@@ -109,7 +109,7 @@ const VideoPost = ({ videoData }) => {
           <Heart
             size={32}
             className={`transition-all ${
-              isLiked ? 'text-[#b554b5] fill-[#b554b5]' : 'text-white'
+              isLiked ? 'text-[var(--primary-color)] fill-[var(--primary-color)]' : 'text-white'
             }`}
           />
           <span className="text-xs font-semibold">{likes}</span>

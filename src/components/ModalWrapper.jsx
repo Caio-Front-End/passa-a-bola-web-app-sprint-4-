@@ -9,15 +9,15 @@ const ModalWrapper = ({ children, onClose, title }) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white/10 dark:bg-gray-600/10 backdrop-blur-sm border border-white/20 dark:border-gray-700 rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col animate-[scaleUp_0.3s_ease-out_forwards]"
+        className="border-2 border-gray-200/10 bg-[var(--bg-color)]/40 backdrop-blur-md rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col animate-[scaleUp_0.3s_ease-out_forwards]"
       >
-        <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+        <header className="flex justify-between items-center p-4 border-b border-gray-200/10">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+            className=" dark:text-gray-400 dark:hover:text-white transition-colors"
             aria-label="Fechar modal"
           >
             <X size={24} />
