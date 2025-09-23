@@ -32,11 +32,11 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-full w-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-4">
+    <div className="min-h-full w-full flex flex-col items-center justify-center bg-[var(--bg-color)] px-4">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <Trophy size={48} className="mx-auto text-[#b554b5]" />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <Trophy size={48} className="mx-auto text-[var(--primary-color)]" />
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Crie sua conta
           </h2>
           <SeletorAdmin />
@@ -55,7 +55,7 @@ const RegisterPage = () => {
               <input
                 type="text"
                 required
-                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-[#b554b5] focus:border-[#b554b5] sm:text-sm"
+                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
                 placeholder="Nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -69,7 +69,7 @@ const RegisterPage = () => {
               <input
                 type="email"
                 required
-                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-[#b554b5] focus:border-[#b554b5] sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
                 placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +83,7 @@ const RegisterPage = () => {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-b-md relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-[#b554b5] focus:border-[#b554b5] sm:text-sm"
+                className="appearance-none rounded-b-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
                 placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -93,18 +93,18 @@ const RegisterPage = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#b554b5] hover:bg-[#d44b84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b554b5]"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)]"
             >
               Cadastrar
             </button>
           </div>
         </form>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-center text-sm text-gray-400">
           Já tem uma conta?{' '}
           {/* A navegação agora é feita com o componente Link */}
           <Link
             to="/login"
-            className="font-medium text-[#b554b5] hover:text-[#d44b84]"
+            className="font-medium text-[var(--primary-color)] hover:text-[var(--primary-color-hover)]"
           >
             Faça login
           </Link>
