@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { Mail, Lock, Trophy } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react'; // Removido Trophy não utilizado
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
 
 import { IntroScreen } from '../components/IntroScreen.jsx';
@@ -12,7 +12,9 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, isLoggingIn } = useAuth();
-  const [showIntro, setShowIntro] = useState(true);
+  
+  // LÓGICA ATUALIZADA AQUI
+  const [showIntro, setShowIntro] = useState(localStorage.getItem('introSeen') !== 'true');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ const LoginPage = () => {
                 placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoggingIn} // Desabilita durante o login
+                disabled={isLoggingIn}
               />
             </div>
             <div className="relative">
@@ -73,7 +75,7 @@ const LoginPage = () => {
                 placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoggingIn} // Desabilita durante o login
+                disabled={isLoggingIn}
               />
             </div>
           </div>
@@ -82,7 +84,7 @@ const LoginPage = () => {
             <button
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#b554b5] hover:bg-[#863D86] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b554b5] disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoggingIn} // Desabilita durante o login
+              disabled={isLoggingIn}
             >
               {isLoggingIn ? 'Entrando...' : 'Entrar'}
             </button>

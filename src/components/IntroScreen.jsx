@@ -32,8 +32,14 @@ const IntroScreen = ({ onFinish }) => {
         });
     }, [currentSlide]);
 
-    const handleNext = () => currentSlide < totalSlides - 1 ? setCurrentSlide(currentSlide + 1) : onFinish();
-    const handleSkip = () => onFinish();
+    // LÓGICA ATUALIZADA AQUI
+    const handleFinish = () => {
+        localStorage.setItem('introSeen', 'true');
+        onFinish();
+    };
+
+    const handleNext = () => currentSlide < totalSlides - 1 ? setCurrentSlide(currentSlide + 1) : handleFinish();
+    const handleSkip = () => handleFinish();
     const handleDotClick = (index) => setCurrentSlide(index);
 
     return (
@@ -60,10 +66,8 @@ const IntroScreen = ({ onFinish }) => {
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d0c11] via-[#0d0c11]/80 to-transparent md:hidden"></div>
             </div>
 
-            {/* Bloco de Conteúdo Direito (Desktop) / Baixo (Mobile) */}
             <div className="relative w-full h-[35%] flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
                 
-                {/* Bloco de Conteúdo para Desktop (escondido no mobile) */}
                 <div className="hidden md:flex flex-col w-full h-full">
                     <div className="flex-grow flex flex-col justify-center animate-fade-in">
                         <h2 className="text-4xl font-bold mb-3">{slidesData[currentSlide].title}</h2>
@@ -99,7 +103,6 @@ const IntroScreen = ({ onFinish }) => {
                     </div>
                 </div>
 
-                {/* Conteúdo e Navegação Mobile (escondido no desktop) */}
                 <div className="w-full max-w-md flex flex-col justify-between h-full py-4 md:hidden">
                     <div className="w-full mx-auto">
                         <div className="animate-fade-in">
