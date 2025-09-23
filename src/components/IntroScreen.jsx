@@ -43,7 +43,7 @@ const IntroScreen = ({ onFinish }) => {
     const handleDotClick = (index) => setCurrentSlide(index);
 
     return (
-        <div className="h-dvh w-screen overflow-hidden bg-[#0d0c11] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="h-dvh w-screen overflow-hidden bg-[var(--bg-color)] flex flex-col text-white md:flex-row" style={{ fontFamily: "'Inter', sans-serif" }}>
             
             <div className="relative w-full h-[65%] md:w-2/3 md:h-full">
                 <div className="absolute inset-0">
@@ -63,7 +63,7 @@ const IntroScreen = ({ onFinish }) => {
                         return null;
                     })}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0d0c11] via-[#0d0c11]/80 to-transparent md:hidden"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-color)] via-[var(--bg-color)]/80 to-transparent md:hidden"></div>
             </div>
 
             <div className="relative w-full h-[35%] flex flex-col justify-center items-center p-4 text-center md:w-1/3 md:h-full md:items-start md:text-left md:p-12">
@@ -77,7 +77,7 @@ const IntroScreen = ({ onFinish }) => {
                         <div className="flex items-center space-x-4">
                             <button 
                                 onClick={handleNext} 
-                                className="bg-[#b554b5] text-black font-bold px-8 py-3 rounded-full transition-all duration-200 ease-in-out hover:scale-105 hover:brightness-110 active:scale-100"
+                                className="bg-[var(--primary-color)] text-black font-bold px-8 py-3 rounded-full transition-all duration-200 ease-in-out hover:scale-105 hover:brightness-110 active:scale-100"
                             >
                                 {currentSlide === totalSlides - 1 ? 'Concluir' : 'Próximo'}
                             </button>
@@ -93,7 +93,7 @@ const IntroScreen = ({ onFinish }) => {
                             <p className="text-sm font-semibold text-gray-500 mb-3">NAVEGAR</p>
                             <div className="flex items-center space-x-3">
                                 {slidesData.map((slide, index) => (
-                                    <button key={index} onClick={() => handleDotClick(index)} className={`w-24 h-16 rounded-lg overflow-hidden transition-all duration-300 ${currentSlide === index ? 'ring-2 ring-offset-2 ring-offset-[#0d0d0d] ring-[#b554b5]' : 'opacity-50 hover:opacity-100'}`}>
+                                    <button key={index} onClick={() => handleDotClick(index)} className={`w-24 h-16 rounded-lg overflow-hidden transition-all duration-300 ${currentSlide === index ? 'ring-2 ring-offset-2 ring-offset-[#0d0d0d] ring-[var(--primary-color)]' : 'opacity-50 hover:opacity-100'}`}>
                                         {slide.type === 'image' && <img src={slide.src} alt={slide.alt} className="w-full h-full object-cover" />}
                                         {slide.type === 'video' && <video src={slide.src} className="w-full h-full object-cover" muted playsInline />}
                                     </button>
@@ -113,7 +113,7 @@ const IntroScreen = ({ onFinish }) => {
                     <div className="w-full mx-auto flex flex-col items-center">
                         <div className="flex space-x-2 my-5">
                             {slidesData.map((_, index) => (
-                                <button key={index} onClick={() => handleDotClick(index)} className={`h-2 rounded-full transition-all duration-300 ${currentSlide === index ? 'bg-[#b554b5] w-6' : 'bg-gray-400 w-2'}`} />
+                                <button key={index} onClick={() => handleDotClick(index)} className={`h-2 rounded-full transition-all duration-300 ${currentSlide === index ? 'bg-[var(--primary-color)] w-6' : 'bg-gray-400 w-2'}`} />
                             ))}
                         </div>
                         <div className="flex items-center justify-between w-full mb-8 px-4">
@@ -127,7 +127,7 @@ const IntroScreen = ({ onFinish }) => {
                             )}
                             <button 
                                 onClick={handleNext} 
-                                className="bg-[#b554b5] text-black font-bold px-8 py-3 rounded-full ml-auto transition-transform duration-200 hover:scale-105 active:scale-100"
+                                className="bg-[var(--primary-color)] text-black font-bold px-8 py-3 rounded-full ml-auto transition-transform duration-200 hover:scale-105 active:scale-100"
                             >
                                 {currentSlide === totalSlides - 1 ? 'Concluir' : 'Próximo'}
                             </button>

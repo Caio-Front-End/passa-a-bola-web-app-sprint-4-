@@ -33,7 +33,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-[#0d0c11] px-4">
+    <div className="min-h-full flex flex-col items-center justify-center bg-[var(--bg-color)] px-4">
       <div className="w-full max-w-md space-y-8">
         <div>
           <img
@@ -56,7 +56,7 @@ const LoginPage = () => {
               <input
                 type="email"
                 required
-                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[#191821] focus:outline-none focus:ring-[#b554b5] focus:border-[#b554b5] sm:text-sm"
+                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
                 placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -71,7 +71,7 @@ const LoginPage = () => {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-b-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[#191821] focus:outline-none focus:ring-[#b554b5] focus:border-[#b554b5] sm:text-sm"
+                className="appearance-none rounded-b-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
                 placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -83,7 +83,7 @@ const LoginPage = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#b554b5] hover:bg-[#863D86] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b554b5] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoggingIn}
             >
               {isLoggingIn ? 'Entrando...' : 'Entrar'}
@@ -94,7 +94,7 @@ const LoginPage = () => {
           Não tem uma conta?{' '}
           <Link
             to="/register"
-            className="font-medium text-[#b554b5] hover:text-[#863D86]"
+            className="font-medium text-[var(--primary-color)] hover:text-[var(--primary-color-hover)]"
           >
             Cadastre-se
           </Link>
