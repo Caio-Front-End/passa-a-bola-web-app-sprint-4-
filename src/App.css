@@ -7,6 +7,14 @@ html, body, #root {
   overflow-x: hidden;
 }
 
+:root {
+  --primary-color: #b554b5; /* rosa  */
+  --primary-color-hover: #863D86; /* rosa mais escuro */
+  --bg-color: #0d0c11; /* preto */
+  --bg-color2: #191821; /* Cinza escuro */
+  --bg-color2-hover: #2c2a33; /* Cinza escuro mais claro */
+}
+
 /* Adicionando um estilo de scroll mais sutil para o feed FINTA */
 .snap-mandatory::-webkit-scrollbar {
   width: 0px;
@@ -16,14 +24,14 @@ html, body, #root {
 /* Chatbot (animação) */
 
 /* Animação para o chatbot ao clicar */
-@keyframes fadeInUp {
+@keyframes zoomIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: scale(0.7);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
 }
 

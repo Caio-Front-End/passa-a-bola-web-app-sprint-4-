@@ -13,10 +13,10 @@ const LoadingScreen = () => {
           animation: spin-reverse 1.2s linear infinite;
         }
       `}</style>
-      <div className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 font-sans">
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-[var(--bg-color)] font-sans">
         <div className="relative w-24 h-24 flex items-center justify-center">
           {/* Círculo rosa externo, gira em sentido horário */}
-          <div className="absolute w-full h-full rounded-full border-4 border-transparent border-t-[#b554b5] animate-spin"></div>
+          <div className="absolute w-full h-full rounded-full border-4 border-transparent border-t-[var(--primary-color)] animate-spin"></div>
 
           {/* Círculo branco interno, gira em sentido anti-horário */}
           <div className="absolute w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full border-4 border-transparent border-t-black dark:border-t-white/80 animate-spin-reverse"></div>
