@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoadingScreen from '../components/LoadingScreen.jsx';
+import LoadingScreen from '../components/LoadingScreen'; 
 
 export const AuthContext = createContext(null);
 
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(JSON.parse(user));
       }
     } catch (error) {
-      console.error('Failed to parse user from localStorage', error);
+      console.error('Falha ao analisar o usuário do localStorage', error);
       localStorage.removeItem('currentUser');
     }
     setLoading(false);
@@ -35,13 +35,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('currentUser', JSON.stringify(user));
         setCurrentUser(user);
 
-        // 4. Simula o carregamento e depois navega
         setTimeout(() => {
           navigate('/');
-          // Desativa o carregamento
           setIsLoggingIn(false);
           resolve(user);
-          // Duração
         }, 2500);
       } else {
         setIsLoggingIn(false);
@@ -50,14 +47,19 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const register = (name, email, password) => {
+  // Objeto `userData` com todos os dados.
+  const register = (userData) => {
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    if (users.find((u) => u.email === email)) {
+    
+    // Verifica se o email já existe usando o email do objeto userData
+    if (users.find((u) => u.email === userData.email)) {
       return { success: false, message: 'Este e-mail já está em uso.' };
     }
-    const newUser = { name, email, password };
-    users.push(newUser);
+    
+    // Adiciona o objeto completo do novo usuário ao array
+    users.push(userData);
     localStorage.setItem('users', JSON.stringify(users));
+    
     return { success: true, message: 'Cadastro realizado com sucesso!' };
   };
 
@@ -76,7 +78,6 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  //Se estiver carregando, mostra a tela de carregamento
   if (isLoggingIn) {
     return <LoadingScreen />;
   }
