@@ -24,7 +24,7 @@ const LoadingScreen = () => {
           {/* logo */}
           <img
             src={logoPab}
-            alt="Logo da aplicação"
+            
             // Tamanho base para mobile
             className="p-2 w-22 h-22 transition-all duration-300 
                        invert grayscale brightness-100 
