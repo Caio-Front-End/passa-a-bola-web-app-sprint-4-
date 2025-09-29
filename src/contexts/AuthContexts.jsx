@@ -1,6 +1,16 @@
+// src/contexts/AuthContexts.jsx
 import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoadingScreen from '../components/LoadingScreen'; 
+import { auth, db } from '../firebase'; // Importe do nosso arquivo firebase.js
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 export const AuthContext = createContext(null);
 
@@ -11,62 +21,66 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    try {
-      const user = localStorage.getItem('currentUser');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCurrentUser(JSON.parse(user));
+        // Se o usuário está logado, busca os dados do perfil no Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          // Combina os dados do Auth e do Firestore
+          setCurrentUser({ ...user, ...userDocSnap.data() });
+        } else {
+          setCurrentUser(user);
+        }
+      } else {
+        setCurrentUser(null);
       }
-    } catch (error) {
-      console.error('Falha ao analisar o usuário do localStorage', error);
-      localStorage.removeItem('currentUser');
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+    return unsubscribe; // Limpa a inscrição ao desmontar
   }, []);
 
-  const login = (email, password) => {
-    return new Promise((resolve, reject) => {
-      setIsLoggingIn(true);
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(
-        (u) => u.email === email && u.password === password,
-      );
-
-      if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        setCurrentUser(user);
-
-        setTimeout(() => {
-          navigate('/');
-          setIsLoggingIn(false);
-          resolve(user);
-        }, 2500);
-      } else {
+  const login = async (email, password) => {
+    setIsLoggingIn(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setTimeout(() => {
+        navigate('/');
         setIsLoggingIn(false);
-        reject(new Error('E-mail ou senha inválidos.'));
-      }
-    });
+      }, 1500);
+    } catch (error) {
+      setIsLoggingIn(false);
+      throw error;
+    }
   };
 
-  // Objeto `userData` com todos os dados.
-  const register = (userData) => {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    
-    // Verifica se o email já existe usando o email do objeto userData
-    if (users.find((u) => u.email === userData.email)) {
-      return { success: false, message: 'Este e-mail já está em uso.' };
-    }
-    
-    // Adiciona o objeto completo do novo usuário ao array
-    users.push(userData);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    return { success: true, message: 'Cadastro realizado com sucesso!' };
+  // Função de registro ATUALIZADA para receber todos os dados
+  const register = async (profileData, password) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, profileData.email, password);
+    const user = userCredential.user;
+
+    // Atualiza o nome de exibição no perfil principal do Firebase Auth
+    await updateProfile(user, { displayName: profileData.name });
+
+    // Salva o objeto COMPLETO com todos os dados no Firestore
+    // O nome do "documento" será o ID do usuário (user.uid)
+    await setDoc(doc(db, "users", user.uid), {
+        name: profileData.name,
+        email: profileData.email,
+        apelido: profileData.apelido,
+        idade: profileData.idade,
+        posicao: profileData.posicao,
+        timeCoracao: profileData.timeCoracao,
+        cidadeEstado: profileData.cidadeEstado,
+    });
+
+    return userCredential;
   };
 
   const logout = () => {
-    localStorage.removeItem('currentUser');
-    setCurrentUser(null);
-    navigate('/login');
+    signOut(auth).then(() => {
+      navigate('/login');
+    });
   };
 
   const value = {
