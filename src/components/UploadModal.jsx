@@ -26,7 +26,7 @@ const UploadModal = ({ onClose }) => {
     try {
       // 1. Criar referência e fazer upload para o Firebase Storage
       const fileName = `${currentUser.uid}_${Date.now()}`;
-      const storageRef = ref(storage, `videos/${fileName}`);
+      const storageRef = ref(storage, `videos/${currentUser.uid}/${fileName}`);
       await uploadBytes(storageRef, file);
 
       // 2. Obter a URL de download do vídeo
