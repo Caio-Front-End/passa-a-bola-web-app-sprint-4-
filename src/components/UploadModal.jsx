@@ -1,4 +1,3 @@
-// src/components/UploadModal.jsx
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { storage, db } from '../firebase'; // Importar do nosso firebase.js
@@ -36,7 +35,7 @@ const UploadModal = ({ onClose }) => {
       await addDoc(collection(db, 'videos'), {
         uid: currentUser.uid,
         userName: currentUser.displayName,
-        avatarUrl: `https://placehold.co/40x40/b554b5/FFFFFF?text=${currentUser.displayName.charAt(0).toUpperCase()}`,
+        avatarUrl: currentUser.photoURL || null, // Salva a URL da foto atual ou nulo
         videoUrl: videoUrl,
         caption: caption,
         likes: 0,
@@ -48,8 +47,8 @@ const UploadModal = ({ onClose }) => {
       onClose();
       window.location.reload(); // Recarrega a página para atualizar as listas
     } catch (error) {
-      console.error("Erro no upload: ", error);
-      alert("Falha ao enviar o vídeo.");
+      console.error('Erro no upload: ', error);
+      alert('Falha ao enviar o vídeo.');
     }
     setUploading(false);
   };
@@ -63,7 +62,10 @@ const UploadModal = ({ onClose }) => {
         <h2 className="text-2xl font-bold mb-4">Postar Vídeo</h2>
         <form onSubmit={handleUpload}>
           <div className="mb-4">
-            <label htmlFor="video-upload" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="video-upload"
+              className="block text-sm font-medium mb-2"
+            >
               Selecione o vídeo
             </label>
             <input
