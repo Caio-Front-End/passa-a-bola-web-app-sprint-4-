@@ -64,15 +64,7 @@ export const AuthProvider = ({ children }) => {
 
     // Salva o objeto COMPLETO com todos os dados no Firestore
     // O nome do "documento" será o ID do usuário (user.uid)
-    await setDoc(doc(db, "users", user.uid), {
-        name: profileData.name,
-        email: profileData.email,
-        apelido: profileData.apelido,
-        idade: profileData.idade,
-        posicao: profileData.posicao,
-        timeCoracao: profileData.timeCoracao,
-        cidadeEstado: profileData.cidadeEstado,
-    });
+    await setDoc(doc(db, "users", user.uid), profileData);
 
     return userCredential;
   };
