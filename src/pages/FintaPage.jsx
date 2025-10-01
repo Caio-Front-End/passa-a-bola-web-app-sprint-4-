@@ -47,10 +47,10 @@ const FintaPage = () => {
     <div className="h-full w-full bg-black flex justify-center relative">
       <button
         onClick={() => setUploadModalOpen(true)}
-        className="absolute top-4 right-4 z-10 bg-[var(--primary-color)] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]"
+        className="absolute top-5 right-5 z-10 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
         aria-label="Postar vídeo"
       >
-        <Plus size={28} />
+        <Plus size={28} strokeWidth={2.5}/>
       </button>
 
       <div className="h-full w-full md:max-w-md bg-neutral-900 overflow-y-auto snap-y snap-mandatory">
