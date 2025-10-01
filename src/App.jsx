@@ -12,8 +12,8 @@ import RegisterPage from './pages/RegisterPage';
 import HubPage from './pages/HubPage';
 import CourtsPage from './pages/CourtsPage';
 import FintaPage from './pages/FintaPage';
-import ChatbotPage from './pages/ChatbotPage'; 
-import MyAccountPage from './pages/MyAccountPage';
+import ChatbotPage from './pages/ChatbotPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
           <Route path="/courts" element={<CourtsPage />} />
           <Route path="/finta" element={<FintaPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
-          <Route path="/minha-conta" element={<MyAccountPage />} />
+          <Route path="/minha-conta" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>
