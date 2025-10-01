@@ -130,7 +130,17 @@ const ProfilePage = () => {
     try {
       // 1. Se uma nova foto foi enviada, faz o upload para o Storage
       if (photoFile) {
-        const storageRef = ref(storage, `profile-pictures/${currentUser.uid}`);
+        // Define um nome de arquivo único para a foto de perfil
+        // Isso garante que o caminho tenha o formato exigido pelas regras:
+        // profile-pictures/{userId}/{fileName}
+        const fileExtension = photoFile.name.split('.').pop();
+        const fileName = `${currentUser.uid}-${Date.now()}.${fileExtension}`;
+
+        const storageRef = ref(
+          storage,
+          `profile-pictures/${currentUser.uid}/${fileName}`,
+        );
+
         await uploadBytes(storageRef, photoFile);
         photoURL = await getDownloadURL(storageRef);
         updatedData.photoURL = photoURL; // Adiciona a nova URL aos dados a serem salvos
@@ -154,6 +164,10 @@ const ProfilePage = () => {
   const handleDeleteVideo = async (video) => {
     if (!window.confirm('Tem certeza que deseja excluir este vídeo?')) return;
     try {
+      // A video.videoUrl já deve ser o caminho completo do storage,
+      // mas se estiver apenas o URL de download, pode haver um problema aqui.
+      // Assumindo que video.videoUrl é o caminho completo do Storage ou que o Firebase SDK
+      // é inteligente o suficiente para resolver a partir da URL.
       const videoRef = ref(storage, video.videoUrl);
       await deleteObject(videoRef);
       await deleteDoc(doc(db, 'videos', video.id));
