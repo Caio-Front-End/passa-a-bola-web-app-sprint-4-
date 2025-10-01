@@ -1,7 +1,6 @@
-// src/pages/FintaPage.jsx
 import { useState, useEffect } from 'react';
-import { db } from '../firebase'; // Importar o db do Firebase
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import VideoPost from '../components/VideoPost';
 import UploadModal from '../components/UploadModal';
 import { Plus } from 'lucide-react';
@@ -12,35 +11,80 @@ const FintaPage = () => {
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchVideos = async () => {
+    const fetchVideosAndUsers = async () => {
       setLoading(true);
       try {
-        const videosCollection = collection(db, 'videos');
-        const q = query(videosCollection, orderBy('createdAt', 'desc'));
+        // 1. Busca os vídeos ordenados por data
+        const videosCollectionRef = collection(db, 'videos');
+        const q = query(videosCollectionRef, orderBy('createdAt', 'desc'));
         const videosSnapshot = await getDocs(q);
-        const videosList = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const videosList = videosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        // Formatar os dados para o formato que o componente VideoPost espera
-        const formattedData = videosList.map(video => ({
+        if (videosList.length === 0) {
+          setVideos([]);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Coleta os IDs únicos dos usuários que postaram os vídeos
+        const userIds = [
+          ...new Set(videosList.map((v) => v.uid).filter(Boolean)),
+        ];
+
+        let usersMap = {};
+        if (userIds.length > 0) {
+          // 3. Busca os perfis dos usuários correspondentes
+          const usersCollectionRef = collection(db, 'users');
+          const usersQuery = query(
+            usersCollectionRef,
+            where('__name__', 'in', userIds),
+          );
+          const usersSnapshot = await getDocs(usersQuery);
+          usersSnapshot.forEach((doc) => {
+            usersMap[doc.id] = doc.data();
+          });
+        }
+
+        // 4. Combina os dados dos vídeos com os dados de perfil atualizados
+        const formattedData = videosList.map((video) => {
+          const userProfile = usersMap[video.uid];
+          const name = userProfile?.name || video.userName;
+          const initial = name ? name.charAt(0).toUpperCase() : '?';
+          // Usa a foto de perfil do usuário, se não tiver, usa a que está no vídeo, se não, usa um placeholder
+          const avatar =
+            userProfile?.photoURL ||
+            video.avatarUrl ||
+            `https://placehold.co/40x40/b554b5/FFFFFF?text=${initial}`;
+
+          return {
             id: video.id,
-            user: { name: video.userName, avatar: video.avatarUrl },
+            user: { name, avatar },
             videoUrl: video.videoUrl,
             caption: video.caption,
             likes: video.likes,
             comments: video.comments,
-        }));
+          };
+        });
+
         setVideos(formattedData);
       } catch (error) {
-        console.error("Erro ao buscar vídeos do Firestore:", error);
+        console.error('Erro ao buscar vídeos do Firestore:', error);
       }
       setLoading(false);
     };
 
-    fetchVideos();
+    fetchVideosAndUsers();
   }, []);
 
   if (loading) {
-    return <div className="h-full w-full bg-black flex justify-center items-center text-white">Carregando FINTA...</div>;
+    return (
+      <div className="h-full w-full bg-black flex justify-center items-center text-white">
+        Carregando FINTA...
+      </div>
+    );
   }
 
   return (
@@ -59,7 +103,9 @@ const FintaPage = () => {
         ))}
       </div>
 
-      {isUploadModalOpen && <UploadModal onClose={() => setUploadModalOpen(false)} />}
+      {isUploadModalOpen && (
+        <UploadModal onClose={() => setUploadModalOpen(false)} />
+      )}
     </div>
   );
 };
