@@ -108,10 +108,10 @@ const RegisterPage = () => {
                 <Star className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <select value={posicao} onChange={(e) => setPosicao(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm">
                   <option value="" disabled>Posição favorita</option>
-                  <option value="goleira">Goleira</option>
-                  <option value="fixo">Fixo / Zagueira</option>
-                  <option value="ala">Ala / Lateral</option>
-                  <option value="pivo">Pivô / Atacante</option>
+                  <option value="Goleira">Goleira</option>
+                  <option value="Fixo / Zagueira">Fixo / Zagueira</option>
+                  <option value="Ala / Meia">Ala / Meia</option>
+                  <option value="pivô / Atacante">Pivô / Atacante</option>
                 </select>
               </div>
               <div className="relative">

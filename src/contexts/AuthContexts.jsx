@@ -7,7 +7,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import LoadingScreen from '../components/LoadingScreen.jsx';
@@ -23,19 +23,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDocRef = doc(db, "users", user.uid);
+        const userDocRef = doc(db, 'users', user.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
-          const userData = { ...user, ...userDocSnap.data() };
-          setCurrentUser(userData);
-          // Redirecionamento Pós-Refresh
-          if (window.location.pathname === '/login' || window.location.pathname === '/register') {
-              if (userData.userType === 'organizador') {
-                  navigate('/dashboard');
-              } else {
-                  navigate('/');
-              }
-          }
+          setCurrentUser({ ...user, ...userDocSnap.data() });
         } else {
           setCurrentUser(user);
         }
@@ -45,20 +36,27 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
     return unsubscribe;
-  }, [navigate]);
+  }, []);
 
   const login = async (email, password) => {
     setIsLoggingIn(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
 
       // Busca os dados do Firestore para saber o userType
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       setTimeout(() => {
-        if (userDocSnap.exists() && userDocSnap.data().userType === 'organizador') {
+        if (
+          userDocSnap.exists() &&
+          userDocSnap.data().userType === 'organizador'
+        ) {
           navigate('/dashboard');
         } else {
           navigate('/');
@@ -72,10 +70,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (profileData, password) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, profileData.email, password);
+    const { name, email, ...restData } = profileData;
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const user = userCredential.user;
-    await updateProfile(user, { displayName: profileData.name });
-    await setDoc(doc(db, "users", user.uid), profileData);
+
+    await updateProfile(user, {
+      displayName: name,
+      photoURL: '', // Inicializa photoURL
+    });
+
+    const finalProfileData = {
+      name,
+      email,
+      ...restData,
+      photoURL: '', // Garante que o campo exista no firestore
+    };
+
+    await setDoc(doc(db, 'users', user.uid), finalProfileData);
+
     return userCredential;
   };
 
@@ -85,6 +101,14 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  // NOVA FUNÇÃO: Para atualizar o usuário em toda a aplicação
+  const updateCurrentUser = (newData) => {
+    setCurrentUser((prevUser) => ({
+      ...prevUser,
+      ...newData,
+    }));
+  };
+
   const value = {
     currentUser,
     loading,
@@ -92,6 +116,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateCurrentUser, // Exporta a nova função
   };
 
   if (isLoggingIn) {

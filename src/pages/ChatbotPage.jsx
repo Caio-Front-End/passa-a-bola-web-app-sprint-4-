@@ -52,58 +52,138 @@ const ChatbotPage = () => {
     };
 
     return (
-        <div className="h-dvh w-screen bg-[var(--bg-color)] flex flex-col pt-16 pb-24 md:hidden">
-            <div className="flex-1 p-4 overflow-y-auto">
-                <div className="flex flex-col gap-4">
-                    {messages.map((msg, index) => (
-                        <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            {msg.sender === 'bot' && (
+        <div className="h-dvh w-full bg-[var(--bg-color)] flex">
+            {/* Layout Desktop */}
+            <div className="hidden md:flex w-full max-w-4xl mx-auto flex-col h-full p-8">
+                <div className="bg-[var(--bg-color2)] rounded-2xl flex-1 flex flex-col overflow-hidden">
+                    {/* Header do chat */}
+                    <div className="p-6 border-b border-gray-700/50">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[var(--primary-color)]/20 rounded-full flex items-center justify-center">
+                                <Bot size={24} className="text-[var(--primary-color)]" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-white">Tonha</h1>
+                                <p className="text-sm text-gray-400">Assistente de Futebol Feminino</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Área de mensagens */}
+                    <div className="flex-1 p-6 overflow-y-auto">
+                        <div className="flex flex-col gap-4">
+                            {messages.map((msg, index) => (
+                                <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    {msg.sender === 'bot' && (
+                                        <div className="w-8 h-8 bg-[var(--primary-color)]/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Bot size={20} className="text-[var(--primary-color)]" />
+                                        </div>
+                                    )}
+                                    <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                                        msg.sender === 'user' 
+                                            ? 'bg-[var(--primary-color)] text-white rounded-br-none' 
+                                            : 'bg-gray-700/50 text-gray-200 rounded-bl-none'
+                                    }`}>
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex items-end gap-2 justify-start">
+                                    <div className="w-8 h-8 bg-[var(--primary-color)]/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <Bot size={20} className="text-[var(--primary-color)]" />
+                                    </div>
+                                    <div className="max-w-[80%] p-3 rounded-2xl bg-gray-700/50">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                            <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                            <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={chatEndRef} />
+                        </div>
+                    </div>
+
+                    {/* Input de mensagem */}
+                    <form onSubmit={handleSendMessage} className="p-6 border-t border-gray-700/50">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                placeholder="Pergunte sobre futebol feminino..."
+                                className="w-full pl-4 pr-12 py-3 bg-gray-700/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
+                                disabled={isLoading}
+                            />
+                            <button
+                                type="submit"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-[var(--primary-color)] text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:brightness-110"
+                                disabled={isLoading || inputValue.trim() === ''}
+                                aria-label="Enviar mensagem"
+                            >
+                                <Send size={20} />
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {/* Layout Mobile (original) */}
+            <div className="md:hidden h-dvh w-screen bg-[var(--bg-color)] flex flex-col pt-16 pb-28">
+                <div className="flex-1 p-4 overflow-y-auto">
+                    <div className="flex flex-col gap-4">
+                        {messages.map((msg, index) => (
+                            <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {msg.sender === 'bot' && (
+                                    <div className="w-8 h-8 bg-[var(--bg-color2)] rounded-full flex items-center justify-center flex-shrink-0">
+                                        <Bot size={20} className="text-gray-300" />
+                                    </div>
+                                )}
+                                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[var(--primary-color)] text-white rounded-br-none' : 'bg-[var(--bg-color2)] text-gray-200 rounded-bl-none'}`}>
+                                    {msg.text}
+                                </div>
+                            </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex items-end gap-2 justify-start">
                                 <div className="w-8 h-8 bg-[var(--bg-color2)] rounded-full flex items-center justify-center flex-shrink-0">
                                     <Bot size={20} className="text-gray-300" />
                                 </div>
-                            )}
-                            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[var(--primary-color)] text-white rounded-br-none' : 'bg-[var(--bg-color2)] text-gray-200 rounded-bl-none'}`}>
-                                {msg.text}
-                            </div>
-                        </div>
-                    ))}
-                    {isLoading && (
-                        <div className="flex items-end gap-2 justify-start">
-                            <div className="w-8 h-8 bg-[var(--bg-color2)] rounded-full flex items-center justify-center flex-shrink-0">
-                                <Bot size={20} className="text-gray-300" />
-                            </div>
-                            <div className="max-w-[80%] p-3 rounded-2xl bg-[var(--bg-color2)]">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                    <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                    <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                <div className="max-w-[80%] p-3 rounded-2xl bg-[var(--bg-color2)]">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    <div ref={chatEndRef} />
+                        )}
+                        <div ref={chatEndRef} />
+                    </div>
                 </div>
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-[var(--bg-color2)] bg-[var(--bg-color)]">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            placeholder="Pergunte sobre futebol feminino..."
+                            className="w-full pl-4 pr-12 py-3 bg-[var(--bg-color2)] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
+                            disabled={isLoading}
+                        />
+                        <button
+                            type="submit"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-[var(--primary-color)] text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:brightness-110"
+                            disabled={isLoading || inputValue.trim() === ''}
+                            aria-label="Enviar mensagem"
+                        >
+                            <Send size={20} />
+                        </button>
+                    </div>
+                </form>
             </div>
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-[var(--bg-color2)] bg-[var(--bg-color)]">
-                <div className="relative">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        placeholder="Pergunte sobre futebol feminino..."
-                        className="w-full pl-4 pr-12 py-3 bg-[var(--bg-color2)] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
-                        disabled={isLoading}
-                    />
-                    <button
-                        type="submit"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-[var(--primary-color)] text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:brightness-110"
-                        disabled={isLoading || inputValue.trim() === ''}
-                        aria-label="Enviar mensagem"
-                    >
-                        <Send size={20} />
-                    </button>
-                </div>
-            </form>
         </div>
     );
 };
