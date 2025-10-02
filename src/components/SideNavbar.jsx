@@ -7,47 +7,72 @@ import { House, MapTrifold, FilmStrip, SignOut } from 'phosphor-react';
 import { Bot } from 'lucide-react';
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
 
-const navItems = [
-  {
-    path: '/',
-    icon: <House size={28} />,
-    activeIcon: <House size={28} weight="fill" />,
-    label: 'Hub',
-  },
-  {
-    path: '/courts',
-    icon: <MapTrifold size={28} />,
-    activeIcon: <MapTrifold size={28} weight="fill" />,
-    label: 'Quadras',
-  },
-  {
-    path: '/chatbot',
-    icon: <Bot size={28} />,
-    activeIcon: <Bot size={28} weight="fill" />,
-    label: 'Tonha',
-  },
-  {
-    path: '/finta',
-    icon: <FilmStrip size={28} />,
-    activeIcon: <FilmStrip size={28} weight="fill" />,
-    label: 'FINTA',
-  },
-];
-
 const SideNavBar = () => {
   const { currentUser, logout } = useAuth();
+
+  const isOrganizer = currentUser?.userType === 'organizador'; // <-- Novo
+
+  // Define os itens de navegação baseados no tipo de usuário
+  const athleteNavItems = [
+    {
+      path: '/',
+      icon: <House size={28} />,
+      activeIcon: <House size={28} weight="fill" />,
+      label: 'Hub',
+    },
+    {
+      path: '/courts',
+      icon: <MapTrifold size={28} />,
+      activeIcon: <MapTrifold size={28} weight="fill" />,
+      label: 'Quadras',
+    },
+    {
+      path: '/chatbot',
+      icon: <Bot size={28} />,
+      activeIcon: <Bot size={28} weight="fill" />,
+      label: 'Tonha',
+    },
+    {
+      path: '/finta',
+      icon: <FilmStrip size={28} />,
+      activeIcon: <FilmStrip size={28} weight="fill" />,
+      label: 'FINTA',
+    },
+  ];
+
+  // Itens de navegação para o Organizador (somente Dashboard e Tonha)
+  const organizerNavItems = [
+    {
+      path: '/dashboard',
+      icon: <House size={28} />, // Usando House como placeholder para Dashboard
+      activeIcon: <House size={28} weight="fill" />,
+      label: 'Dashboard',
+    },
+    {
+      path: '/chatbot',
+      icon: <Bot size={28} />,
+      activeIcon: <Bot size={28} weight="fill" />,
+      label: 'Tonha',
+    },
+  ];
+
+  const finalNavItems = isOrganizer ? organizerNavItems : athleteNavItems; // <-- Novo
 
   // --> 2. Adicione os hooks para navegação
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --> 3. Adicione a array de rotas e a função de navegação
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+  // --> 3. Atualize a array de rotas para a navegação (deve ser a mesma do Layout)
+  const routes = isOrganizer
+    ? ['/dashboard', '/chatbot', '/minha-conta']
+    : ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const handleNavigate = (destinationPath) => {
+    // Usamos 'routes' aqui para garantir a direção correta na animação
     const currentIndex = routes.indexOf(location.pathname);
     const destinationIndex = routes.indexOf(destinationPath);
 
+    // Se a rota de destino não estiver na lista ou for a mesma, apenas navega
     if (
       currentIndex === -1 ||
       destinationIndex === -1 ||
@@ -81,7 +106,8 @@ const SideNavBar = () => {
       </div>
       <nav className="flex-grow">
         <ul>
-          {navItems.map((item) => {
+          {finalNavItems.map((item) => {
+            // <-- Usa finalNavItems
             // --> 4. Calcule o estado 'ativo' manualmente
             const isActive = location.pathname === item.path;
             return (
