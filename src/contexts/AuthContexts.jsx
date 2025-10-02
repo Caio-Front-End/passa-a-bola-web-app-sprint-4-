@@ -7,7 +7,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import LoadingScreen from '../components/LoadingScreen.jsx';
@@ -23,11 +23,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Se o usuário está logado, busca os dados do perfil no Firestore
-        const userDocRef = doc(db, "users", user.uid);
+        const userDocRef = doc(db, 'users', user.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
-          // Combina os dados do Auth e do Firestore
           setCurrentUser({ ...user, ...userDocSnap.data() });
         } else {
           setCurrentUser(user);
@@ -37,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     });
-    return unsubscribe; // Limpa a inscrição ao desmontar
+    return unsubscribe;
   }, []);
 
   const login = async (email, password) => {
@@ -54,17 +52,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Função de registro ATUALIZADA para receber todos os dados
   const register = async (profileData, password) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, profileData.email, password);
+    const { name, email, ...restData } = profileData;
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const user = userCredential.user;
 
-    // Atualiza o nome de exibição no perfil principal do Firebase Auth
-    await updateProfile(user, { displayName: profileData.name });
+    await updateProfile(user, {
+      displayName: name,
+      photoURL: '', // Inicializa photoURL
+    });
 
-    // Salva o objeto COMPLETO com todos os dados no Firestore
-    // O nome do "documento" será o ID do usuário (user.uid)
-    await setDoc(doc(db, "users", user.uid), profileData);
+    const finalProfileData = {
+      name,
+      email,
+      ...restData,
+      photoURL: '', // Garante que o campo exista no firestore
+    };
+
+    await setDoc(doc(db, 'users', user.uid), finalProfileData);
 
     return userCredential;
   };
@@ -75,6 +84,14 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  // NOVA FUNÇÃO: Para atualizar o usuário em toda a aplicação
+  const updateCurrentUser = (newData) => {
+    setCurrentUser((prevUser) => ({
+      ...prevUser,
+      ...newData,
+    }));
+  };
+
   const value = {
     currentUser,
     loading,
@@ -82,6 +99,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateCurrentUser, // Exporta a nova função
   };
 
   if (isLoggingIn) {

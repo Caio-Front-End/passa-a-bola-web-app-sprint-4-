@@ -1,33 +1,91 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useOutlet } from 'react-router-dom';
+import { useSwipeable } from 'react-swipeable';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import SideNavBar from './SideNavbar.jsx';
 import BottomNavBar from './BottomNavbar.jsx';
 import MobileHeader from './MobileHeader.jsx';
+import BackButton from './BackButton.jsx';
 
-//Cria o "elemento pai" de todas as seções, elas serão renderizadas dentro deste layout,
-//que denpendendo do tamanho da tela, renderiza o navbar no inferior ou lateral
+const pageVariants = {
+  enter: (direction) => ({
+    x: direction === 'left' ? '100vw' : '-100vw',
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    x: direction === 'left' ? '-100vw' : '100vw',
+    opacity: 0,
+  }),
+};
+
 const Layout = () => {
-  //hook para definir o condicional e não exibir no FINTA
   const location = useLocation();
+  const navigate = useNavigate();
+  const outlet = useOutlet();
+  const { direction } = location.state || {};
+
   const isFintaPage = location.pathname === '/finta';
   const isTonhaPage = location.pathname === '/chatbot';
 
+  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      const currentIndex = routes.indexOf(location.pathname);
+      if (currentIndex < routes.length - 1) {
+        navigate(routes[currentIndex + 1], {
+          state: { direction: 'left' },
+        });
+      }
+    },
+    onSwipedRight: () => {
+      const currentIndex = routes.indexOf(location.pathname);
+      if (currentIndex > 0) {
+        navigate(routes[currentIndex - 1], {
+          state: { direction: 'right' },
+        });
+      }
+    },
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: false,
+  });
+
   return (
     <div className="w-full h-screen bg-[var(--bg-color)] flex font-sans">
-      {/* O header só será renderizado se a página atual NÃO for a FINTA */}
       {!isFintaPage && <MobileHeader />}
-
-      <SideNavBar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* O padding superior também é condicional para não quebrar o layout */}
+      {isFintaPage && <BackButton />}
+      {!isFintaPage && <SideNavBar />}
+      <div className="flex-1 flex flex-col overflow-hidden" {...handlers}>
         <main
-          className={`flex-1 overflow-y-auto w-full h-full ${
-            isFintaPage || isTonhaPage ? 'pb-0 ' : 'pb-25 pt-10 md:pt-0'
-          }`}
+          className={`
+            flex-1 overflow-y-auto w-full h-full
+            ${isFintaPage || isTonhaPage ? 'pb-0' : 'pb-25 pt-10 md:pt-0'}
+            relative
+          `}
         >
-          {/* O Outlet renderiza o componente da rota filha (HubPage, Finta, etc.) */}
-          <Outlet />
+          <AnimatePresence initial={false} custom={direction} mode="wait">
+            <motion.div
+              key={location.pathname}
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: 'tween', ease: 'easeInOut', duration: 0.3 },
+                opacity: { duration: 0.2 },
+              }}
+              className="absolute w-full h-full"
+            >
+              {outlet}
+            </motion.div>
+          </AnimatePresence>
         </main>
-        <BottomNavBar />
+        {!isFintaPage && <BottomNavBar />}
       </div>
     </div>
   );
