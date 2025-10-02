@@ -1,94 +1,257 @@
 // src/components/BottomNavbar.jsx
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+// 1. Adicione useLocation e useNavigate, remova NavLink e Link se não forem mais usados em outro lugar
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { House, MapTrifold, FilmStrip, UserCircle, SignOut } from 'phosphor-react';
+import { House, MapTrifold, FilmStrip, UserCircle } from 'phosphor-react';
 import { Bot } from 'lucide-react';
 
 const BottomNavBar = () => {
-    const { currentUser, logout } = useAuth();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const menuRef = useRef(null);
+  const { currentUser } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
-    const chatbotItem = { path: '/chatbot', icon: <Bot size={32} strokeWidth={1.5} />, activeIcon: <Bot size={32} strokeWidth={2.5} />, label: 'Tonha' };
-    const navItems = [
-        { path: '/', icon: <House size={28} />, activeIcon: <House size={28} weight="fill" />, label: 'Hub' },
-        { path: '/courts', icon: <MapTrifold size={28} />, activeIcon: <MapTrifold size={28} weight="fill" />, label: 'Quadras' },
-        { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
-    ];
-    
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setIsMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+  // Verifica o tipo de usuário
+  const isOrganizer = currentUser?.userType === 'organizador'; // <-- Novo
 
-    if (!currentUser) return null;
+  // 1. Hooks para navegação e localização
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  // 2. Rotas dinâmicas para a lógica da animação (deve ser a mesma do Layout.jsx)
+  const routes = isOrganizer
+    ? ['/dashboard', '/chatbot', '/minha-conta'] // Rotas para o Organizador (3 itens)
+    : ['/', '/courts', '/chatbot', '/finta', '/minha-conta']; // Rotas para a Jogadora (5 itens)
+
+  const chatbotItem = {
+    path: '/chatbot',
+    icon: <Bot size={32} strokeWidth={1.5} />,
+    activeIcon: <Bot size={32} strokeWidth={2.5} />,
+    label: 'Tonha',
+  };
+
+  // Itens de navegação para a Jogadora (os 4 em volta do botão central)
+  const athleteNavItems = [
+    {
+      path: '/',
+      icon: <House size={28} />,
+      activeIcon: <House size={28} weight="fill" />,
+      label: 'Hub',
+    },
+    {
+      path: '/courts',
+      icon: <MapTrifold size={28} />,
+      activeIcon: <MapTrifold size={28} weight="fill" />,
+      label: 'Quadras',
+    },
+    {
+      path: '/finta',
+      icon: <FilmStrip size={28} />,
+      activeIcon: <FilmStrip size={28} weight="fill" />,
+      label: 'FINTA',
+    },
+    {
+      path: '/minha-conta',
+      icon: <UserCircle size={28} />,
+      activeIcon: <UserCircle size={28} weight="fill" />,
+      label: 'Perfil',
+    },
+  ];
+
+  // Itens de navegação para o Organizador (os 2 em volta do botão central)
+  const organizerNavItems = [
+    {
+      path: '/dashboard',
+      icon: <House size={28} />,
+      activeIcon: <House size={28} weight="fill" />,
+      label: 'Dashboard',
+    },
+    {
+      path: '/minha-conta',
+      icon: <UserCircle size={28} />,
+      activeIcon: <UserCircle size={28} weight="fill" />,
+      label: 'Perfil',
+    },
+  ];
+
+  // Seleciona o conjunto de itens a serem renderizados
+  const navItemsToRender = isOrganizer ? organizerNavItems : athleteNavItems; // <-- Novo
+
+  // 3. Função de navegação inteligente
+  const handleNavigate = (destinationPath) => {
+    const currentIndex = routes.indexOf(location.pathname);
+    const destinationIndex = routes.indexOf(destinationPath);
+
+    if (
+      currentIndex === -1 ||
+      destinationIndex === -1 ||
+      currentIndex === destinationIndex
+    ) {
+      // Apenas navega se não souber a rota atual ou se for para uma rota não listada
+      // ou se for a mesma rota
+      navigate(destinationPath);
+      return;
+    }
+
+    const direction = destinationIndex > currentIndex ? 'left' : 'right';
+    navigate(destinationPath, { state: { direction } });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  if (!currentUser) return null;
+
+  // Lógica de Renderização Condicional
+  if (isOrganizer) {
+    // Para o organizador, renderizamos apenas Dashboard e Perfil
+    const [dashboard, perfil] = navItemsToRender;
     return (
-        <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-md md:hidden z-30" ref={menuRef}>
-            {isMenuOpen && (
-                 <div className="absolute bottom-[75px] right-0 w-52 bg-gray-700 rounded-xl shadow-lg py-2 z-30 border border-gray-600">
-                    <div className="px-4 py-2 text-sm text-gray-200">
-                        <p className="font-semibold">{currentUser.displayName}</p>
-                        <p className="text-xs text-gray-400 truncate">{currentUser.email}</p>
-                    </div>
-                    <div className="border-t border-gray-600 my-1"></div>
-                    <Link to="/minha-conta" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-left text-gray-200 hover:bg-gray-600">
-                        <UserCircle size={18} />
-                        <span>Minha Conta</span>
-                    </Link>
-                    <button onClick={() => { logout(); setIsMenuOpen(false); }} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-gray-600">
-                        <SignOut size={18} />
-                        <span>Sair</span>
-                    </button>
-                </div>
-            )}
+      <nav
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[60%] max-w-sm md:hidden z-30" // Reduz o tamanho do container
+        ref={menuRef}
+      >
+        <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
+          <div className="flex justify-around items-center w-full h-full px-2">
+            {/* Botão Dashboard (canto esquerdo) */}
+            {[dashboard].map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleNavigate(item.path)}
+                  className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
+                    isActive
+                      ? 'text-[var(--primary-color)]'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {isActive ? item.activeIcon : item.icon}
+                  <span className="text-[10px] mt-1 font-medium">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
 
-            <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
-                <div className="flex justify-around items-center w-full h-full px-2">
-                    {/* --- CORREÇÃO APLICADA AQUI --- */}
-                    {navItems.map((item) => (
-                        <NavLink key={item.label} to={item.path} end={item.path === '/'} className={({isActive}) => `flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isActive ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
-                            {({isActive}) => (
-                                <>
-                                    {isActive ? item.activeIcon : item.icon}
-                                    <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-                                </>
-                            )}
-                        </NavLink>
-                    )).slice(0, 2) /* Pega os 2 primeiros itens */}
+            <div className="w-10 flex-shrink-0"></div>
 
-                    <div className="w-10 flex-shrink-0"></div>
-                    
-                    {/* --- E AQUI --- */}
-                    {navItems.map((item) => (
-                         <NavLink key={item.label} to={item.path} className={({isActive}) => `flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isActive ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
-                           {({isActive}) => (
-                                <>
-                                    {isActive ? item.activeIcon : item.icon}
-                                    <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-                                </>
-                           )}
-                        </NavLink>
-                    )).slice(2, 3) /* Pega o 3º item */}
-                    
-                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isMenuOpen ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
-                        <UserCircle size={28} weight={isMenuOpen ? "fill" : "regular"} />
-                        <span className="text-[10px] mt-1 font-medium">Perfil</span>
-                    </button>
-                </div>
+            {/* Botão Perfil (canto direito) */}
+            {[perfil].map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleNavigate(item.path)}
+                  className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
+                    isActive
+                      ? 'text-[var(--primary-color)]'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {isActive ? item.activeIcon : item.icon}
+                  <span className="text-[10px] mt-1 font-medium">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-                <NavLink to={chatbotItem.path} className={({ isActive }) => `absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-[var(--primary-color-hover)] text-gray-300' : 'bg-[var(--primary-color)] text-black'}`}>
-                    {({ isActive }) => (isActive ? chatbotItem.activeIcon : chatbotItem.icon)}
-                </NavLink>
-            </div>
-        </nav>
+          {/* Botão central do Chatbot (Tonha) */}
+          <button
+            onClick={() => handleNavigate(chatbotItem.path)}
+            className={`absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+              location.pathname === chatbotItem.path
+                ? 'bg-[var(--primary-color-hover)] text-gray-300'
+                : 'bg-[var(--primary-color)] text-black'
+            }`}
+          >
+            {location.pathname === chatbotItem.path
+              ? chatbotItem.activeIcon
+              : chatbotItem.icon}
+          </button>
+        </div>
+      </nav>
     );
+  }
+
+  // Layout original para JOGADORA
+  return (
+    <nav
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-md md:hidden z-30"
+      ref={menuRef}
+    >
+      <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
+        <div className="flex justify-around items-center w-full h-full px-2">
+          {/* Pega os 2 primeiros itens (Hub e Quadras) */}
+          {navItemsToRender.slice(0, 2).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.label}
+                onClick={() => handleNavigate(item.path)}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
+                  isActive
+                    ? 'text-[var(--primary-color)]'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {isActive ? item.activeIcon : item.icon}
+                <span className="text-[10px] mt-1 font-medium">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+
+          <div className="w-10 flex-shrink-0"></div>
+
+          {/* Pega o 3º e 4º itens (Finta e Perfil) */}
+          {navItemsToRender.slice(2, 4).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.label}
+                onClick={() => handleNavigate(item.path)}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
+                  isActive
+                    ? 'text-[var(--primary-color)]'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {isActive ? item.activeIcon : item.icon}
+                <span className="text-[10px] mt-1 font-medium">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Botão central do Chatbot */}
+        <button
+          onClick={() => handleNavigate(chatbotItem.path)}
+          className={`absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+            location.pathname === chatbotItem.path
+              ? 'bg-[var(--primary-color-hover)] text-gray-300'
+              : 'bg-[var(--primary-color)] text-black'
+          }`}
+        >
+          {location.pathname === chatbotItem.path
+            ? chatbotItem.activeIcon
+            : chatbotItem.icon}
+        </button>
+      </div>
+    </nav>
+  );
 };
 
 export default BottomNavBar;

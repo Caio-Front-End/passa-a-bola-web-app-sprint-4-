@@ -1,6 +1,7 @@
 // src/pages/HubPage.jsx
 import { useState } from 'react';
 import { Trophy, ShieldCheck, Calendar } from 'lucide-react';
+import {SoccerBall} from 'phosphor-react';
 import { useAuth } from '../hooks/useAuth';
 import AgendaCalendario from '../components/AgendaCalendario';
 import CopaBravasModal from '../components/CopaBravasModal';
@@ -17,9 +18,10 @@ const HubPage = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   const stats = [
-    { icon: <Trophy size={24} className="text-[var(--primary-color)]" />, value: '12', label: 'Gols' },
+    { icon: <SoccerBall size={24} className="text-[var(--primary-color)]" />, value: '12', label: 'Gols' },
     { icon: <ShieldCheck size={24} className="text-[var(--primary-color)]" />, value: '8', label: 'Assistências' },
     { icon: <Calendar size={24} className="text-[var(--primary-color)]" />, value: '25', label: 'Jogos' },
+    { icon: <Trophy size={24} className="text-[var(--primary-color)]" />, value: '15', label: 'Vitórias' },
   ];
 
   const currentChampionships = [
@@ -34,13 +36,12 @@ const HubPage = () => {
     return <div className="p-8 bg-[var(--bg-color)] text-white min-h-screen">Carregando dados...</div>;
   }
 
-  // --- ALTERAÇÃO APLICADA AQUI ---
   // Define o que será exibido dependendo do tipo de usuário
   const isOrganizer = currentUser.userType === 'organizador';
 
   return (
     <>
-      <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
+      <div className="p-4 md:p-8 pb-34 bg-[var(--bg-color)] text-gray-200 min-h-full">
         <header className="mb-6">
           <p className="text-md text-gray-400">Bem-vinda de volta,</p>
           {/* AQUI ESTÁ A CORREÇÃO: Usando displayName em vez de name */}
@@ -74,6 +75,20 @@ const HubPage = () => {
                   <p className="text-sm">{proximoJogoInfo.horario}</p>
                 </div>
               </button>
+              <div className="lg:col-span-1">
+                <h2 className="font-semibold text-2xl mb-3 text-white">Estatísticas</h2>
+                <div className="grid grid-cols-2 gap-6">
+                  {stats.map((stat) => (
+                    <div key={stat.label} className="bg-[var(--bg-color2)] border-2 border-gray-200/10 p-4 rounded-xl shadow flex lg:flex-row flex-col lg:space-x-4 text-left">
+                      {stat.icon}
+                      <div className="mt-2 lg:mt-0">
+                        <p className="text-5xl font-bold text-white">{stat.value}</p>
+                        <p className="text-sm text-gray-400">{stat.label}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
               <div className="pt-6">
                 <h2 className="font-semibold text-2xl mb-3 text-white">Meus Campeonatos</h2>
                 <div className="space-y-4">
@@ -90,20 +105,7 @@ const HubPage = () => {
                 </div>
               </div>
             </div>
-            <div className="lg:col-span-1">
-              <h2 className="font-semibold text-2xl mb-3 text-white">Estatísticas</h2>
-              <div className="grid grid-cols-3 lg:grid-cols-1 gap-4">
-                {stats.map((stat) => (
-                  <div key={stat.label} className="bg-[var(--bg-color2)] p-4 rounded-lg shadow flex lg:flex-row flex-col items-center lg:space-x-4 text-center lg:text-left">
-                    {stat.icon}
-                    <div className="mt-2 lg:mt-0">
-                      <p className="text-2xl font-bold text-white">{stat.value}</p>
-                      <p className="text-sm text-gray-400">{stat.label}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            
           </div>
         )}
       </div>
