@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { House, MapTrifold, FilmStrip, UserCircle, SignOut } from 'phosphor-react';
+import { House, MapTrifold, FilmStrip, UserCircle, SignOut, AppWindow } from 'phosphor-react'; // Adicionado AppWindow
 import { Bot } from 'lucide-react';
 
 const BottomNavBar = () => {
@@ -10,13 +10,21 @@ const BottomNavBar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const chatbotItem = { path: '/chatbot', icon: <Bot size={32} strokeWidth={1.5} />, activeIcon: <Bot size={32} strokeWidth={2.5} />, label: 'Tonha' };
-    const navItems = [
-        { path: '/', icon: <House size={28} />, activeIcon: <House size={28} weight="fill" />, label: 'Hub' },
-        { path: '/courts', icon: <MapTrifold size={28} />, activeIcon: <MapTrifold size={28} weight="fill" />, label: 'Quadras' },
-        { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
-    ];
+    // Define os itens de navegação com base no tipo de usuário
+    const isOrganizer = currentUser?.userType === 'organizador';
+    const navItems = isOrganizer
+      ? [
+          { path: '/dashboard', icon: <AppWindow size={28} />, activeIcon: <AppWindow size={28} weight="fill" />, label: 'Dashboard' },
+          { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
+        ]
+      : [
+          { path: '/', icon: <House size={28} />, activeIcon: <House size={28} weight="fill" />, label: 'Hub' },
+          { path: '/courts', icon: <MapTrifold size={28} />, activeIcon: <MapTrifold size={28} weight="fill" />, label: 'Quadras' },
+          { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
+        ];
     
+    const chatbotItem = { path: '/chatbot', icon: <Bot size={32} strokeWidth={1.5} />, activeIcon: <Bot size={32} strokeWidth={2.5} />, label: 'Tonha' };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -28,6 +36,10 @@ const BottomNavBar = () => {
     }, []);
 
     if (!currentUser) return null;
+
+    // Ajusta a lógica de exibição para acomodar 2 ou 3 itens
+    const firstHalf = navItems.slice(0, Math.ceil(navItems.length / 2));
+    const secondHalf = navItems.slice(Math.ceil(navItems.length / 2));
 
     return (
         <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-md md:hidden z-30" ref={menuRef}>
@@ -51,8 +63,7 @@ const BottomNavBar = () => {
 
             <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
                 <div className="flex justify-around items-center w-full h-full px-2">
-                    {/* --- CORREÇÃO APLICADA AQUI --- */}
-                    {navItems.map((item) => (
+                    {firstHalf.map((item) => (
                         <NavLink key={item.label} to={item.path} end={item.path === '/'} className={({isActive}) => `flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isActive ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
                             {({isActive}) => (
                                 <>
@@ -61,12 +72,11 @@ const BottomNavBar = () => {
                                 </>
                             )}
                         </NavLink>
-                    )).slice(0, 2) /* Pega os 2 primeiros itens */}
+                    ))}
 
                     <div className="w-10 flex-shrink-0"></div>
                     
-                    {/* --- E AQUI --- */}
-                    {navItems.map((item) => (
+                    {secondHalf.map((item) => (
                          <NavLink key={item.label} to={item.path} className={({isActive}) => `flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isActive ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
                            {({isActive}) => (
                                 <>
@@ -75,7 +85,7 @@ const BottomNavBar = () => {
                                 </>
                            )}
                         </NavLink>
-                    )).slice(2, 3) /* Pega o 3º item */}
+                    ))}
                     
                     <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${isMenuOpen ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-white'}`}>
                         <UserCircle size={28} weight={isMenuOpen ? "fill" : "regular"} />

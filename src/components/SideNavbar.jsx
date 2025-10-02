@@ -1,14 +1,8 @@
 // src/components/SideNavbar.jsx
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { House, MapTrifold, FilmStrip, SignOut } from 'phosphor-react';
+import { House, MapTrifold, FilmStrip, SignOut, AppWindow } from 'phosphor-react'; // Adicionado AppWindow
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
-
-const navItems = [
-  { path: '/', icon: <House size={28} />, activeIcon: <House size={28} weight="fill" />, label: 'Hub' },
-  { path: '/courts', icon: <MapTrifold size={28} />, activeIcon: <MapTrifold size={28} weight="fill" />, label: 'Quadras' },
-  { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
-];
 
 const SideNavBar = () => {
   const { currentUser, logout } = useAuth();
@@ -16,6 +10,19 @@ const SideNavBar = () => {
   if (!currentUser) {
     return null;
   }
+
+  // Define quais itens de navegação serão exibidos
+  const isOrganizer = currentUser.userType === 'organizador';
+  const navItems = isOrganizer
+    ? [
+        { path: '/dashboard', icon: <AppWindow size={28} />, activeIcon: <AppWindow size={28} weight="fill" />, label: 'Dashboard' },
+        { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
+      ]
+    : [
+        { path: '/', icon: <House size={28} />, activeIcon: <House size={28} weight="fill" />, label: 'Hub' },
+        { path: '/courts', icon: <MapTrifold size={28} />, activeIcon: <MapTrifold size={28} weight="fill" />, label: 'Quadras' },
+        { path: '/finta', icon: <FilmStrip size={28} />, activeIcon: <FilmStrip size={28} weight="fill" />, label: 'FINTA' },
+      ];
 
   const displayName = currentUser.displayName || currentUser.email;
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
@@ -30,11 +37,10 @@ const SideNavBar = () => {
         <ul>
           {navItems.map((item) => (
             <li key={item.label}>
-              {/* --- CORREÇÃO APLICADA AQUI --- */}
-              <NavLink 
-                to={item.path} 
-                end={item.path === '/'} 
-                className={({ isActive }) => 
+              <NavLink
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) =>
                   `flex items-center gap-4 w-full px-4 py-3 rounded-lg text-lg font-semibold transition-colors duration-200 ${
                     isActive ? 'bg-[var(--primary-color)]/20 text-[var(--primary-color)]' : 'text-gray-300 hover:bg-gray-700/50'
                   }`

@@ -14,6 +14,8 @@ import CourtsPage from './pages/CourtsPage';
 import FintaPage from './pages/FintaPage';
 import ChatbotPage from './pages/ChatbotPage';
 import ProfilePage from './pages/ProfilePage';
+import DashboardPage from './pages/DashboardPage';
+import MyVenuesPage from './pages/MyVenuesPage'; // Importação da nova página
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
           <Route path="/finta" element={<FintaPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/minha-conta" element={<ProfilePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/organizer/venues" element={<MyVenuesPage />} /> {/* Rota adicionada */}
         </Route>
       </Route>
     </Routes>
