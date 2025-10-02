@@ -1,3 +1,5 @@
+// src/components/Layout.jsx
+
 import { Outlet, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +8,7 @@ import SideNavBar from './SideNavbar.jsx';
 import BottomNavBar from './BottomNavbar.jsx';
 import MobileHeader from './MobileHeader.jsx';
 import BackButton from './BackButton.jsx';
+import { useAuth } from '../hooks/useAuth.js'; // <-- Adicionado
 
 const pageVariants = {
   enter: (direction) => ({
@@ -28,15 +31,23 @@ const Layout = () => {
   const outlet = useOutlet();
   const { direction } = location.state || {};
 
+  // LÓGICA DO ORGANIZADOR ADICIONADA: Determina o tipo de usuário
+  const { currentUser } = useAuth();
+  const isOrganizer = currentUser?.userType === 'organizador';
+
   const isFintaPage = location.pathname === '/finta';
   const isTonhaPage = location.pathname === '/chatbot';
 
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+  // Rotas dinâmicas para a lógica de swipe
+  const routes = isOrganizer
+    ? ['/dashboard', '/chatbot', '/minha-conta'] // Rotas para o Organizador
+    : ['/', '/courts', '/chatbot', '/finta', '/minha-conta']; // Rotas para a Jogadora
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       const currentIndex = routes.indexOf(location.pathname);
-      if (currentIndex < routes.length - 1) {
+      if (currentIndex < routes.length - 1 && currentIndex !== -1) {
+        // <-- Adicionada verificação de índice
         navigate(routes[currentIndex + 1], {
           state: { direction: 'left' },
         });
@@ -44,7 +55,8 @@ const Layout = () => {
     },
     onSwipedRight: () => {
       const currentIndex = routes.indexOf(location.pathname);
-      if (currentIndex > 0) {
+      if (currentIndex > 0 && currentIndex !== -1) {
+        // <-- Adicionada verificação de índice
         navigate(routes[currentIndex - 1], {
           state: { direction: 'right' },
         });
