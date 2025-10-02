@@ -1,7 +1,7 @@
 // src/contexts/AuthContexts.jsx
 import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase'; // Importe do nosso arquivo firebase.js
+import { auth, db } from '../firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,9 +41,26 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setIsLoggingIn(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+
+      // Busca os dados do Firestore para saber o userType
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
       setTimeout(() => {
-        navigate('/');
+        if (
+          userDocSnap.exists() &&
+          userDocSnap.data().userType === 'organizador'
+        ) {
+          navigate('/dashboard');
+        } else {
+          navigate('/');
+        }
         setIsLoggingIn(false);
       }, 1500);
     } catch (error) {
