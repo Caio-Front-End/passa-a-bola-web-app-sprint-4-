@@ -1,8 +1,5 @@
-// src/components/SideNavbar.jsx
-
-// --> 1. Adicione useLocation e useNavigate, remova NavLink e Link
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.js';
+import { useAuth } from '../hooks/useAuth';
 import { House, MapTrifold, FilmStrip, SignOut } from 'phosphor-react';
 import { Bot } from 'lucide-react';
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
@@ -10,10 +7,7 @@ import logoPabOriginal from '../assets/img/logo-pab-original.png';
 const SideNavBar = () => {
   const { currentUser, logout } = useAuth();
 
-  const isOrganizer = currentUser?.userType === 'organizador'; // <-- Novo
-
-  // Define os itens de navegação baseados no tipo de usuário
-  const athleteNavItems = [
+  const finalNavItems = [
     {
       path: '/',
       icon: <House size={28} />,
@@ -40,32 +34,10 @@ const SideNavBar = () => {
     },
   ];
 
-  // Itens de navegação para o Organizador (somente Dashboard e Tonha)
-  const organizerNavItems = [
-    {
-      path: '/dashboard',
-      icon: <House size={28} />, // Usando House como placeholder para Dashboard
-      activeIcon: <House size={28} weight="fill" />,
-      label: 'Dashboard',
-    },
-    {
-      path: '/chatbot',
-      icon: <Bot size={28} />,
-      activeIcon: <Bot size={28} weight="fill" />,
-      label: 'Tonha',
-    },
-  ];
-
-  const finalNavItems = isOrganizer ? organizerNavItems : athleteNavItems; // <-- Novo
-
-  // --> 2. Adicione os hooks para navegação
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --> 3. Atualize a array de rotas para a navegação (deve ser a mesma do Layout)
-  const routes = isOrganizer
-    ? ['/dashboard', '/chatbot', '/minha-conta']
-    : ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const handleNavigate = (destinationPath) => {
     // Usamos 'routes' aqui para garantir a direção correta na animação
@@ -107,12 +79,9 @@ const SideNavBar = () => {
       <nav className="flex-grow">
         <ul>
           {finalNavItems.map((item) => {
-            // <-- Usa finalNavItems
-            // --> 4. Calcule o estado 'ativo' manualmente
             const isActive = location.pathname === item.path;
             return (
               <li key={item.label}>
-                {/* --> 5. Substitua NavLink por um <button> com onClick */}
                 <button
                   onClick={() => handleNavigate(item.path)}
                   className={`flex items-center gap-4 w-full text-left px-4 py-3 rounded-lg text-lg font-semibold transition-colors duration-200 ${
@@ -130,7 +99,6 @@ const SideNavBar = () => {
         </ul>
       </nav>
       <div className="border-t border-gray-700/50 pt-4">
-        {/* --> 6. Substitua o Link do perfil por um <button> com onClick */}
         <button
           onClick={() => handleNavigate('/minha-conta')}
           className="flex items-center gap-3 mb-4 p-2 w-full rounded-lg hover:bg-gray-700/50 transition-colors"
