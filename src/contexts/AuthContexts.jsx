@@ -1,7 +1,6 @@
-// src/contexts/AuthContexts.jsx
 import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase';
+import { auth, db } from '../firebase.js';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,26 +40,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setIsLoggingIn(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      const user = userCredential.user;
+      await signInWithEmailAndPassword(auth, email, password);
 
-      // Busca os dados do Firestore para saber o userType
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
+      // Lógica de redirecionamento simplificada: Todos vão para o Hub '/'
       setTimeout(() => {
-        if (
-          userDocSnap.exists() &&
-          userDocSnap.data().userType === 'organizador'
-        ) {
-          navigate('/dashboard');
-        } else {
-          navigate('/');
-        }
+        navigate('/');
         setIsLoggingIn(false);
       }, 1500);
     } catch (error) {
@@ -80,14 +64,16 @@ export const AuthProvider = ({ children }) => {
 
     await updateProfile(user, {
       displayName: name,
-      photoURL: '', // Inicializa photoURL
+      photoURL: '',
     });
 
+    // Garante que o userType está definido como 'jogadora' no Firestore
     const finalProfileData = {
       name,
       email,
       ...restData,
-      photoURL: '', // Garante que o campo exista no firestore
+      photoURL: '',
+      userType: 'jogadora',
     };
 
     await setDoc(doc(db, 'users', user.uid), finalProfileData);
@@ -101,7 +87,6 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // NOVA FUNÇÃO: Para atualizar o usuário em toda a aplicação
   const updateCurrentUser = (newData) => {
     setCurrentUser((prevUser) => ({
       ...prevUser,
@@ -116,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateCurrentUser, // Exporta a nova função
+    updateCurrentUser,
   };
 
   if (isLoggingIn) {
