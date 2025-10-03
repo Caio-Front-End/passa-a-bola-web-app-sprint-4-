@@ -1,21 +1,19 @@
 import { Routes, Route } from 'react-router-dom';
 
 // Componentes de Layout e Proteção
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 // Páginas Públicas
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
 
 // Páginas Protegidas
-import HubPage from './pages/HubPage';
-import CourtsPage from './pages/CourtsPage';
-import FintaPage from './pages/FintaPage';
-import ChatbotPage from './pages/ChatbotPage';
-import ProfilePage from './pages/ProfilePage';
-import DashboardPage from './pages/DashboardPage';
-import MyVenuesPage from './pages/MyVenuesPage'; // Importação da nova página
+import HubPage from './pages/HubPage.jsx';
+import CourtsPage from './pages/CourtsPage.jsx';
+import FintaPage from './pages/FintaPage.jsx';
+import ChatbotPage from './pages/ChatbotPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 
 function App() {
   return (
@@ -32,8 +30,6 @@ function App() {
           <Route path="/finta" element={<FintaPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/minha-conta" element={<ProfilePage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/organizer/venues" element={<MyVenuesPage />} /> {/* Rota adicionada */}
         </Route>
       </Route>
     </Routes>

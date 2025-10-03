@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import ModalWrapper from './ModalWrapper';
 import { User, Cake, MapPin, Heart, Shield, Camera } from 'lucide-react';
-import SeletorAdmin from './SeletorAdmin';
 
 const EditProfileModal = ({ isOpen, onClose, currentUser, onSave }) => {
   // Trava de segurança para evitar erro se currentUser for undefined
@@ -16,7 +15,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onSave }) => {
     posicao: currentUser.posicao || '',
     timeCoracao: currentUser.timeCoracao || '',
     cidadeEstado: currentUser.cidadeEstado || '',
-    userType: currentUser.userType || 'jogadora',
+    userType: 'jogadora',
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(
@@ -27,10 +26,6 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onSave }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleUserTypeChange = (type) => {
-    setFormData((prev) => ({ ...prev, userType: type }));
   };
 
   const handlePhotoChange = (e) => {
@@ -77,12 +72,6 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onSave }) => {
             Trocar Foto
           </button>
         </div>
-
-        {/* Seletor de Persona */}
-        <SeletorAdmin
-          selected={formData.userType}
-          setSelected={handleUserTypeChange}
-        />
 
         {/* Campos do Formulário */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

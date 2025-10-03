@@ -1,7 +1,6 @@
-// src/pages/HubPage.jsx
 import { useState } from 'react';
 import { Trophy, ShieldCheck, Calendar } from 'lucide-react';
-import {SoccerBall} from 'phosphor-react';
+import { SoccerBall } from 'phosphor-react';
 import { useAuth } from '../hooks/useAuth';
 import AgendaCalendario from '../components/AgendaCalendario';
 import CopaBravasModal from '../components/CopaBravasModal';
@@ -18,100 +17,166 @@ const HubPage = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   const stats = [
-    { icon: <SoccerBall size={24} className="text-[var(--primary-color)]" />, value: '12', label: 'Gols' },
-    { icon: <ShieldCheck size={24} className="text-[var(--primary-color)]" />, value: '8', label: 'Assistências' },
-    { icon: <Calendar size={24} className="text-[var(--primary-color)]" />, value: '25', label: 'Jogos' },
-    { icon: <Trophy size={24} className="text-[var(--primary-color)]" />, value: '15', label: 'Vitórias' },
+    {
+      icon: <SoccerBall size={24} className="text-[var(--primary-color)]" />,
+      value: '12',
+      label: 'Gols',
+    },
+    {
+      icon: <ShieldCheck size={24} className="text-[var(--primary-color)]" />,
+      value: '8',
+      label: 'Assistências',
+    },
+    {
+      icon: <Calendar size={24} className="text-[var(--primary-color)]" />,
+      value: '25',
+      label: 'Jogos',
+    },
+    {
+      icon: <Trophy size={24} className="text-[var(--primary-color)]" />,
+      value: '15',
+      label: 'Vitórias',
+    },
   ];
 
   const currentChampionships = [
-    { name: 'Liga das Campeãs', progress: 75, modal: 'copaBravas', phase: 'Quartas de Final', image: fotoEquipe1, },
-    { name: 'Passa a Bola', progress: 40, modal: 'ligaDasEstrelas', phase: 'Pontos Corridos', image: fotoEquipe2, },
+    {
+      name: 'Liga das Campeãs',
+      progress: 75,
+      modal: 'copaBravas',
+      phase: 'Quartas de Final',
+      image: fotoEquipe1,
+    },
+    {
+      name: 'Passa a Bola',
+      progress: 40,
+      modal: 'ligaDasEstrelas',
+      phase: 'Pontos Corridos',
+      image: fotoEquipe2,
+    },
   ];
 
   const handleOpenModal = (modalName) => setActiveModal(modalName);
   const handleCloseModal = () => setActiveModal(null);
 
   if (!currentUser) {
-    return <div className="p-8 bg-[var(--bg-color)] text-white min-h-screen">Carregando dados...</div>;
+    return (
+      <div className="p-8 bg-[var(--bg-color)] text-white min-h-screen">
+        Carregando dados...
+      </div>
+    );
   }
-
-  // Define o que será exibido dependendo do tipo de usuário
-  const isOrganizer = currentUser.userType === 'organizador';
 
   return (
     <>
       <div className="p-4 md:p-8 pb-34 bg-[var(--bg-color)] text-gray-200 min-h-full">
         <header className="mb-6">
           <p className="text-md text-gray-400">Bem-vinda de volta,</p>
-          {/* AQUI ESTÁ A CORREÇÃO: Usando displayName em vez de name */}
-          <h1 className="text-3xl font-bold text-white">{currentUser.displayName}</h1>
+          <h1 className="text-3xl font-bold text-white">
+            {currentUser.displayName}
+          </h1>
         </header>
 
-        {/* Renderização condicional: Mostra conteúdo diferente para organizador */}
-        {isOrganizer ? (
-          <div className="bg-[var(--bg-color2)] p-6 rounded-lg shadow-lg text-center">
-            <h2 className="text-2xl font-bold text-white mb-3">Área do Organizador</h2>
-            <p className="text-gray-400">Em breve, aqui você poderá criar e gerenciar seus campeonatos e quadras.</p>
-          </div>
-        ) : (
-          // Conteúdo original para jogadoras
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <h2 className="font-semibold text-2xl mb-3 text-white">Calendário de Jogos</h2>
-              <AgendaCalendario />
-              <h2 className="font-semibold text-2xl pt-6 mb-3 text-white">Próximo Jogo</h2>
-              <button
-                onClick={() => handleOpenModal('proximoJogo')}
-                className="w-full text-left bg-[var(--primary-color)] text-white p-5 rounded-lg shadow-lg flex items-center space-x-4 cursor-pointer hover:bg-[var(--primary-color-hover)] transition-all hover:scale-101 "
-              >
-                <div className="text-center">
-                  <p className="text-4xl font-bold">{proximoJogoInfo.data.getDate()}</p>
-                  <p className="text-md font-semibold">{format(proximoJogoInfo.data, 'MMM', { locale: ptBR }).toUpperCase()}</p>
-                </div>
-                <div className="border-l-2 border-[var(--bg-color2)] pl-4 flex-grow">
-                  <p className="font-semibold">Próximo Jogo</p>
-                  <p className="text-xl font-bold">vs {proximoJogoInfo.adversario.nome}</p>
-                  <p className="text-sm">{proximoJogoInfo.horario}</p>
-                </div>
-              </button>
-              <div className="lg:col-span-1">
-                <h2 className="font-semibold text-2xl mb-3 text-white">Estatísticas</h2>
-                <div className="grid grid-cols-2 gap-6">
-                  {stats.map((stat) => (
-                    <div key={stat.label} className="bg-[var(--bg-color2)] border-2 border-gray-200/10 p-4 rounded-xl shadow flex lg:flex-row flex-col lg:space-x-4 text-left">
-                      {stat.icon}
-                      <div className="mt-2 lg:mt-0">
-                        <p className="text-5xl font-bold text-white">{stat.value}</p>
-                        <p className="text-sm text-gray-400">{stat.label}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="font-semibold text-2xl mb-3 text-white">
+              Calendário de Jogos
+            </h2>
+            <AgendaCalendario />
+            <h2 className="font-semibold text-2xl pt-6 mb-3 text-white">
+              Próximo Jogo
+            </h2>
+            <button
+              onClick={() => handleOpenModal('proximoJogo')}
+              className="w-full text-left bg-[var(--primary-color)] text-white p-5 rounded-lg shadow-lg flex items-center space-x-4 cursor-pointer hover:bg-[var(--primary-color-hover)] transition-all hover:scale-101 "
+            >
+              <div className="text-center">
+                <p className="text-4xl font-bold">
+                  {proximoJogoInfo.data.getDate()}
+                </p>
+                <p className="text-md font-semibold">
+                  {format(proximoJogoInfo.data, 'MMM', {
+                    locale: ptBR,
+                  }).toUpperCase()}
+                </p>
+              </div>
+              <div className="border-l-2 border-[var(--bg-color2)] pl-4 flex-grow">
+                <p className="font-semibold">Próximo Jogo</p>
+                <p className="text-xl font-bold">
+                  vs {proximoJogoInfo.adversario.nome}
+                </p>
+                <p className="text-sm">{proximoJogoInfo.horario}</p>
+              </div>
+            </button>
+            <div className="lg:col-span-1">
+              <h2 className="font-semibold text-2xl mb-3 text-white">
+                Estatísticas
+              </h2>
+              <div className="grid grid-cols-2 gap-6">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-[var(--bg-color2)] border-2 border-gray-200/10 p-4 rounded-xl shadow flex lg:flex-row flex-col lg:space-x-4 text-left"
+                  >
+                    {stat.icon}
+                    <div className="mt-2 lg:mt-0">
+                      <p className="text-5xl font-bold text-white">
+                        {stat.value}
+                      </p>
+                      <p className="text-sm text-gray-400">{stat.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="pt-6">
+              <h2 className="font-semibold text-2xl mb-3 text-white">
+                Meus Campeonatos
+              </h2>
+              <div className="space-y-4">
+                {currentChampionships.map((champ) => (
+                  <button
+                    key={champ.name}
+                    onClick={() => handleOpenModal(champ.modal)}
+                    className="w-full text-left bg-[var(--bg-color2)] rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[var(--primary-color)] transition-all duration-300 overflow-hidden hover:scale-101"
+                  >
+                    <div className="w-full h-48 md:h-56 lg:h-64 overflow-hidden rounded-t-lg">
+                      <img
+                        src={champ.image}
+                        alt={`Time do campeonato ${champ.name}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <p className="font-semibold text-white mb-1">
+                        {champ.name}
+                      </p>
+                      <p className="text-sm text-gray-400 mb-2">
+                        {champ.phase}
+                      </p>
+                      <div className="w-full bg-gray-700 rounded-full h-2.5">
+                        <div
+                          className="bg-[var(--primary-color)] h-2.5 rounded-full"
+                          style={{ width: `${champ.progress}%` }}
+                        ></div>
                       </div>
                     </div>
-                  ))}
+                  </button>
+                ))}
               </div>
             </div>
-              <div className="pt-6">
-                <h2 className="font-semibold text-2xl mb-3 text-white">Meus Campeonatos</h2>
-                <div className="space-y-4">
-                  {currentChampionships.map((champ) => (
-                    <button key={champ.name} onClick={() => handleOpenModal(champ.modal)} className="w-full text-left bg-[var(--bg-color2)] rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[var(--primary-color)] transition-all duration-300 overflow-hidden hover:scale-101">
-                      <div className="w-full h-48 md:h-56 lg:h-64 overflow-hidden rounded-t-lg"><img src={champ.image} alt={`Time do campeonato ${champ.name}`} className="w-full h-full object-cover" /></div>
-                      <div className="p-4">
-                        <p className="font-semibold text-white mb-1">{champ.name}</p>
-                        <p className="text-sm text-gray-400 mb-2">{champ.phase}</p>
-                        <div className="w-full bg-gray-700 rounded-full h-2.5"><div className="bg-[var(--primary-color)] h-2.5 rounded-full" style={{ width: `${champ.progress}%` }}></div></div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
           </div>
-        )}
+        </div>
       </div>
-      {activeModal === 'copaBravas' && <CopaBravasModal onClose={handleCloseModal} />}
-      {activeModal === 'ligaDasEstrelas' && <LigaDasEstrelasModal onClose={handleCloseModal} />}
-      {activeModal === 'proximoJogo' && <JogoModal onClose={handleCloseModal} jogoInfo={proximoJogoInfo} />}
+      {activeModal === 'copaBravas' && (
+        <CopaBravasModal onClose={handleCloseModal} />
+      )}
+      {activeModal === 'ligaDasEstrelas' && (
+        <LigaDasEstrelasModal onClose={handleCloseModal} />
+      )}
+      {activeModal === 'proximoJogo' && (
+        <JogoModal onClose={handleCloseModal} jogoInfo={proximoJogoInfo} />
+      )}
     </>
   );
 };
