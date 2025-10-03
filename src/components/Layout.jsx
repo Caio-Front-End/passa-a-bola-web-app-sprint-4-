@@ -1,5 +1,3 @@
-// src/components/Layout.jsx
-
 import { Outlet, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +6,7 @@ import SideNavBar from './SideNavbar.jsx';
 import BottomNavBar from './BottomNavbar.jsx';
 import MobileHeader from './MobileHeader.jsx';
 import BackButton from './BackButton.jsx';
-import { useAuth } from '../hooks/useAuth.js'; // <-- Adicionado
+import { useAuth } from '../hooks/useAuth.js';
 
 const pageVariants = {
   enter: (direction) => ({
@@ -31,23 +29,19 @@ const Layout = () => {
   const outlet = useOutlet();
   const { direction } = location.state || {};
 
-  // LÓGICA DO ORGANIZADOR ADICIONADA: Determina o tipo de usuário
+  // currentUser não é mais checado por userType.
   const { currentUser } = useAuth();
-  const isOrganizer = currentUser?.userType === 'organizador';
 
   const isFintaPage = location.pathname === '/finta';
   const isTonhaPage = location.pathname === '/chatbot';
 
-  // Rotas dinâmicas para a lógica de swipe
-  const routes = isOrganizer
-    ? ['/dashboard', '/chatbot', '/minha-conta'] // Rotas para o Organizador
-    : ['/', '/courts', '/chatbot', '/finta', '/minha-conta']; // Rotas para a Jogadora
+  // Rotas FIXAS para a Jogadora/Atleta
+  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       const currentIndex = routes.indexOf(location.pathname);
       if (currentIndex < routes.length - 1 && currentIndex !== -1) {
-        // <-- Adicionada verificação de índice
         navigate(routes[currentIndex + 1], {
           state: { direction: 'left' },
         });
@@ -56,7 +50,6 @@ const Layout = () => {
     onSwipedRight: () => {
       const currentIndex = routes.indexOf(location.pathname);
       if (currentIndex > 0 && currentIndex !== -1) {
-        // <-- Adicionada verificação de índice
         navigate(routes[currentIndex - 1], {
           state: { direction: 'right' },
         });
@@ -70,7 +63,7 @@ const Layout = () => {
     <div className="w-full h-screen bg-[var(--bg-color)] flex font-sans">
       {!isFintaPage && <MobileHeader />}
       {isFintaPage && <BackButton />}
-      {!isFintaPage && <SideNavBar />}
+      <SideNavBar /> {/* Chamada direta */}
       <div className="flex-1 flex flex-col overflow-hidden" {...handlers}>
         <main
           className={`
