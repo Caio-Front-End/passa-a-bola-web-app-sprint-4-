@@ -1,18 +1,25 @@
 // src/pages/RegisterPage.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.js';
-import { User, Mail, Lock, Trophy, Star, Hash, MapPin, Heart } from 'lucide-react';
-import SeletorAdmin from '../components/SeletorAdmin.jsx';
+import { useAuth } from '../hooks/useAuth';
+import {
+  User,
+  Mail,
+  Lock,
+  Trophy,
+  Star,
+  Hash,
+  MapPin,
+  Heart,
+} from 'lucide-react';
 
-// Função simples para validar o formato do e-mail
 const isEmailValid = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
 };
 
 const RegisterPage = () => {
-  const [userType, setUserType] = useState('jogadora');
+  // Removido o estado userType, agora é fixo
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,18 +43,24 @@ const RegisterPage = () => {
       return;
     }
 
-    // NOVA VALIDAÇÃO DE E-MAIL
     if (!isEmailValid(email)) {
-      setError('Por favor, insira um formato de e-mail válido (ex: email@dominio.com).');
+      setError(
+        'Por favor, insira um formato de e-mail válido (ex: email@dominio.com).',
+      );
       return;
     }
 
-    let profileData;
-    if (userType === 'jogadora') {
-      profileData = { name, email, apelido, idade, posicao, timeCoracao, cidadeEstado, userType };
-    } else {
-      profileData = { name, email, userType };
-    }
+    // O profileData de jogadora, com userType
+    const profileData = {
+      name,
+      email,
+      apelido,
+      idade,
+      posicao,
+      timeCoracao,
+      cidadeEstado,
+      userType: 'jogadora', // Fixo como jogadora
+    };
 
     try {
       await register(profileData, password);
@@ -63,7 +76,7 @@ const RegisterPage = () => {
       } else {
         setError('Ocorreu um erro ao criar a conta.');
       }
-      console.error("Erro de registro:", err);
+      console.error('Erro de registro:', err);
     }
   };
 
@@ -75,65 +88,148 @@ const RegisterPage = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Crie sua conta
           </h2>
-          <SeletorAdmin selected={userType} setSelected={setUserType} />
+          <p className="text-gray-400 flex justify-center pt-2 text-sm text-center px-4">
+            Crie sua conta de Jogadora para encontrar campeonatos e times.
+          </p>
         </div>
         <form className="mt-8 space-y-4" onSubmit={handleRegister}>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          {success && <p className="text-green-500 text-sm text-center">{success}</p>}
-
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input type="text" required placeholder="Nome completo" value={name} onChange={(e) => setName(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-          </div>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input type="email" required placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input type="password" required placeholder="Senha (mínimo 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-          </div>
-
-          {userType === 'jogadora' && (
-            <>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input type="text" placeholder="Apelido de destaque" value={apelido} onChange={(e) => setApelido(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-              </div>
-              <div className="relative">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input type="number" placeholder="Idade" value={idade} onChange={(e) => setIdade(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-              </div>
-              <div className="relative">
-                <Star className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <select value={posicao} onChange={(e) => setPosicao(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm">
-                  <option value="" disabled>Posição favorita</option>
-                  <option value="Goleira">Goleira</option>
-                  <option value="Fixo / Zagueira">Fixo / Zagueira</option>
-                  <option value="Ala / Meia">Ala / Meia</option>
-                  <option value="pivô / Atacante">Pivô / Atacante</option>
-                </select>
-              </div>
-              <div className="relative">
-                <Heart className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input type="text" placeholder="Time do coração" value={timeCoracao} onChange={(e) => setTimeCoracao(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-              </div>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input type="text" placeholder="Sua cidade e estado" value={cidadeEstado} onChange={(e) => setCidadeEstado(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm" />
-              </div>
-            </>
+          {success && (
+            <p className="text-green-500 text-sm text-center">{success}</p>
           )}
 
+          <div className="relative">
+            <User
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="text"
+              required
+              placeholder="Nome completo"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+            />
+          </div>
+          <div className="relative">
+            <Mail
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="email"
+              required
+              placeholder="E-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+            />
+          </div>
+          <div className="relative">
+            <Lock
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="password"
+              required
+              placeholder="Senha (mínimo 6 caracteres)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+            />
+          </div>
+
+          <>
+            <div className="relative">
+              <User
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Apelido de destaque"
+                value={apelido}
+                onChange={(e) => setApelido(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              />
+            </div>
+            <div className="relative">
+              <Hash
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="number"
+                placeholder="Idade"
+                value={idade}
+                onChange={(e) => setIdade(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              />
+            </div>
+            <div className="relative">
+              <Star
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <select
+                value={posicao}
+                onChange={(e) => setPosicao(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              >
+                <option value="" disabled>
+                  Posição favorita
+                </option>
+                <option value="Goleira">Goleira</option>
+                <option value="Fixo / Zagueira">Fixo / Zagueira</option>
+                <option value="Ala / Meia">Ala / Meia</option>
+                <option value="pivô / Atacante">Pivô / Atacante</option>
+              </select>
+            </div>
+            <div className="relative">
+              <Heart
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Time do coração"
+                value={timeCoracao}
+                onChange={(e) => setTimeCoracao(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              />
+            </div>
+            <div className="relative">
+              <MapPin
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Sua cidade e estado"
+                value={cidadeEstado}
+                onChange={(e) => setCidadeEstado(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-600 placeholder-gray-500 text-white bg-[var(--bg-color2)] focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              />
+            </div>
+          </>
+
           <div>
-            <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)]">
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)]"
+            >
               Cadastrar
             </button>
           </div>
         </form>
         <p className="text-center text-sm text-gray-400">
           Já tem uma conta?{' '}
-          <Link to="/login" className="font-medium text-[var(--primary-color)] hover:text-[var(--primary-color-hover)]">
+          <Link
+            to="/login"
+            className="font-medium text-[var(--primary-color)] hover:text-[var(--primary-color-hover)]"
+          >
             Faça login
           </Link>
         </p>
