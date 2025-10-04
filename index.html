@@ -3,10 +3,17 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="" href="" />
-  <link rel="shortcut icon" href="./src/assets/img/logo-pab.png" type="image/x-icon">
+  <link rel="icon" type="image/png" href="/src/assets/img/logo-pab.png" />
+  <link rel="shortcut icon" href="/src/assets/img/logo-pab.png" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Passa a Bola</title>
+
+  <!-- Configuração do Google Maps API e Serviços -->
+  <!-- Adicionado 'loading=async' para otimização de performance (Melhor Prática). 
+       O %VITE_GOOGLE_MAPS_API_KEY% será substituído pelo valor da chave real pelo Vite.
+       Bibliotecas: places, geometry (para GeoHash) e geocoding. -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=%VITE_GOOGLE_MAPS_API_KEY%&libraries=places,geometry,geocoding&loading=async&callback=Function.prototype" defer></script>
+
 </head>
 
 <body>
