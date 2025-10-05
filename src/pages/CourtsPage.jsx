@@ -1,5 +1,4 @@
-import { Map, ArrowRight } from 'lucide-react';
-import mapaQuadras from '../assets/img/QuadrasImagem.png';
+import { ArrowRight, Search, PlusCircle } from 'lucide-react';
 
 const CourtsPage = () => {
   const championships = [
@@ -45,23 +44,29 @@ const CourtsPage = () => {
     <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
       <h1 className="text-3xl font-bold mb-6 text-white">Central de Quadras</h1>
 
-      <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-[var(--bg-color2)] mb-8 shadow-lg">
-        {/* Usar a variável da imagem importada no 'src' */}
-        <img
-          src={mapaQuadras}
-          className="w-full h-full object-cover opacity-70"
-          alt="Mapa de quadras"
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <div className="text-center text-white p-4">
-            <Map size={48} className="mx-auto mb-2" />
-            <p className="font-semibold text-lg">Mapa interativo (simulação)</p>
-            <p className="text-sm">Movimente para ver os campeonatos</p>
-          </div>
+      {/* Container de Ações */}
+      <div className="mb-8 flex flex-col md:flex-row gap-4">
+        {/* Botão Organizar */}
+        <button className="flex-1 md:flex-none bg-[var(--primary-color)] text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 hover:bg-[var(--primary-color-hover)] transition-colors">
+          <PlusCircle size={20} />
+          <span>ORGANIZAR</span>
+        </button>
+
+        {/* Busca por ID */}
+        <div className="relative flex-grow">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Buscar campeonato por ID..."
+            className="w-full pl-10 pr-3 py-3 bg-[var(--bg-color2)] rounded-lg text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+          />
         </div>
       </div>
 
-      <h2 className="font-semibold text-2xl mb-4 ttext-white">
+      <h2 className="font-semibold text-2xl mb-4 text-white">
         Campeonatos Próximos
       </h2>
 
