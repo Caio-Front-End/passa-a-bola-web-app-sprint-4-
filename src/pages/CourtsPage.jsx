@@ -1,12 +1,7 @@
 import { Map, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
 import mapaQuadras from '../assets/img/QuadrasImagem.png';
-import CreateChampionshipModal from '../components/CreateChampionshipModal';
 
 const CourtsPage = () => {
-  //Estado para o modal de criação
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
   const championships = [
     {
       id: 1,
@@ -49,14 +44,6 @@ const CourtsPage = () => {
   return (
     <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
       <h1 className="text-3xl font-bold mb-6 text-white">Central de Quadras</h1>
-
-      {/* Botão ORGANIZAR */}
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="mb-6 w-full py-3 bg-[var(--primary-color)] text-white font-bold rounded-lg shadow-lg hover:bg-[var(--primary-color-hover)] transition-colors"
-      >
-        ORGANIZAR NOVO CAMPEONATO
-      </button>
 
       <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-[var(--bg-color2)] mb-8 shadow-lg">
         {/* Usar a variável da imagem importada no 'src' */}
@@ -106,10 +93,6 @@ const CourtsPage = () => {
           </div>
         ))}
       </div>
-
-      {isCreateModalOpen && (
-        <CreateChampionshipModal onClose={() => setIsCreateModalOpen(false)} />
-      )}
     </div>
   );
 };
