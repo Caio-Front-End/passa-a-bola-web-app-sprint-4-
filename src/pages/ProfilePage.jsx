@@ -31,6 +31,10 @@ import {
   History,
 } from 'lucide-react';
 import EditProfileModal from '../components/EditProfileModal';
+import StatsDashboard from '../components/StatsDashboard';
+import PlayerRadarChart from '../components/PlayerRadarChart';
+import AddMatchModal from '../components/AddMatchModal';
+import { userMatches } from '../data/mockStats';
 
 // Componente auxiliar para o item do histórico
 const MatchHistoryItem = ({ partida }) => {
@@ -72,6 +76,17 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('fintas');
   const [isEditModalOpen, setIsEditModal] = useState(false);
+  const [matches, setMatches] = useState(userMatches);
+  const [isAddMatchModalOpen, setIsAddMatchModalOpen] = useState(false);
+
+  // Dados mock para o gráfico radar
+  const radarData = [
+    { subject: 'Ataque', A: 90, fullMark: 100 },
+    { subject: 'Passe', A: 80, fullMark: 100 },
+    { subject: 'Drible', A: 75, fullMark: 100 },
+    { subject: 'Físico', A: 65, fullMark: 100 },
+    { subject: 'Defesa', A: 40, fullMark: 100 },
+  ];
 
   // Mock de dados para o histórico de partidas
   const historicoPartidas = [
@@ -181,6 +196,21 @@ const ProfilePage = () => {
     } catch (error) {
       console.error('Erro ao excluir o vídeo:', error);
     }
+  };
+
+  // Adicione junto com as outras funções
+  const handleAddMatch = (matchData) => {
+    const newMatch = {
+      id: `m${matches.length + 1}`,
+      date: new Date().toLocaleDateString(),
+      ...matchData,
+      stats: {
+        yellowCard: matchData.yellowCard,
+        redCard: matchData.redCard,
+        mvp: matchData.mvp,
+      },
+    };
+    setMatches([newMatch, ...matches]);
   };
 
   if (!currentUser) {
@@ -299,6 +329,16 @@ const ProfilePage = () => {
             >
               <History size={24} />
             </button>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'stats'
+                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
+                  : 'text-gray-400'
+              }`}
+            >
+              <Shield size={24} />
+            </button>
           </div>
 
           <div className="mt-6">
@@ -346,6 +386,29 @@ const ProfilePage = () => {
                 ))}
               </div>
             )}
+
+            {activeTab === 'stats' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-bold text-white">Estatísticas</h3>
+                  <button
+                    onClick={() => setIsAddMatchModalOpen(true)}
+                    className="bg-[var(--primary-color)] hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-lg"
+                  >
+                    Adicionar Partida
+                  </button>
+                </div>
+
+                <StatsDashboard matches={matches} />
+
+                <div className="bg-[var(--bg-color2)] p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold text-white mb-4">
+                    Desempenho por Habilidade
+                  </h4>
+                  <PlayerRadarChart data={radarData} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -358,6 +421,12 @@ const ProfilePage = () => {
           onSave={handleSaveProfile}
         />
       )}
+
+      <AddMatchModal
+        isOpen={isAddMatchModalOpen}
+        onClose={() => setIsAddMatchModalOpen(false)}
+        onMatchSubmit={handleAddMatch}
+      />
     </>
   );
 };
