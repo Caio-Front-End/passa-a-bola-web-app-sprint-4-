@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Trophy, ShieldCheck, Calendar } from 'lucide-react';
 import { SoccerBall } from 'phosphor-react';
 import { useAuth } from '../hooks/useAuth';
@@ -11,33 +11,38 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import fotoEquipe1 from '../assets/img/FotoEquipe1.png';
 import fotoEquipe2 from '../assets/img/FotoEquipe2.png';
+import { userMatches } from '../data/mockStats';
 
 const HubPage = () => {
   const { currentUser } = useAuth();
   const [activeModal, setActiveModal] = useState(null);
+  const [matches, setMatches] = useState(userMatches);
 
-  const stats = [
-    {
-      icon: <SoccerBall size={24} className="text-[var(--primary-color)]" />,
-      value: '12',
-      label: 'Gols',
-    },
-    {
-      icon: <ShieldCheck size={24} className="text-[var(--primary-color)]" />,
-      value: '8',
-      label: 'Assistências',
-    },
-    {
-      icon: <Calendar size={24} className="text-[var(--primary-color)]" />,
-      value: '25',
-      label: 'Jogos',
-    },
-    {
-      icon: <Trophy size={24} className="text-[var(--primary-color)]" />,
-      value: '15',
-      label: 'Vitórias',
-    },
-  ];
+  const stats = useMemo(
+    () => [
+      {
+        icon: <SoccerBall size={24} className="text-[var(--primary-color)]" />,
+        value: matches.reduce((sum, m) => sum + m.goals, 0).toString(),
+        label: 'Gols',
+      },
+      {
+        icon: <ShieldCheck size={24} className="text-[var(--primary-color)]" />,
+        value: matches.reduce((sum, m) => sum + m.assists, 0).toString(),
+        label: 'Assistências',
+      },
+      {
+        icon: <Calendar size={24} className="text-[var(--primary-color)]" />,
+        value: matches.length.toString(),
+        label: 'Jogos',
+      },
+      {
+        icon: <Trophy size={24} className="text-[var(--primary-color)]" />,
+        value: matches.filter((m) => m.result === 'victory').length.toString(),
+        label: 'Vitórias',
+      },
+    ],
+    [matches]
+  );
 
   const currentChampionships = [
     {

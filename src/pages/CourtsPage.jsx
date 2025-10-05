@@ -1,7 +1,4 @@
-// Caminho: src/pages/CourtsPage.jsx
-
 import { Map, ArrowRight } from 'lucide-react';
-// MUDANÇA 1: Importar a imagem local
 import mapaQuadras from '../assets/img/QuadrasImagem.png';
 
 const CourtsPage = () => {
@@ -46,12 +43,10 @@ const CourtsPage = () => {
 
   return (
     <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
-      <h1 className="text-3xl font-bold mb-6 text-white">
-        Central de Quadras
-      </h1>
+      <h1 className="text-3xl font-bold mb-6 text-white">Central de Quadras</h1>
 
       <div className="relative h-64 lg:h-80 w-full rounded-lg overflow-hidden bg-[var(--bg-color2)] mb-8 shadow-lg">
-        {/* MUDANÇA 2: Usar a variável da imagem importada no 'src' */}
+        {/* Usar a variável da imagem importada no 'src' */}
         <img
           src={mapaQuadras}
           className="w-full h-full object-cover opacity-70"
@@ -83,12 +78,8 @@ const CourtsPage = () => {
               </p>
             </div>
             <div className="flex-grow">
-              <h3 className="font-bold text-lg text-gray-200">
-                {champ.name}
-              </h3>
-              <p className="text-sm text-gray-400">
-                {champ.court}
-              </p>
+              <h3 className="font-bold text-lg text-gray-200">{champ.name}</h3>
+              <p className="text-sm text-gray-400">{champ.court}</p>
               <div className="flex items-center text-xs mt-2 space-x-3">
                 <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300">
                   {champ.format}

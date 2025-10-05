@@ -12,7 +12,7 @@ html, body, #root {
   --primary-color-hover: #863D86; /* rosa mais escuro */
   --bg-color: #0d0c11; /* preto */
   --bg-color2: #191821; /* Cinza escuro */
-  --bg-color2-hover: #2c2a33; /* Cinza escuro mais claro */
+  --bg-color2-hover: #191821a8; /* Cinza escuro mais claro */
 }
 
 /* Adicionando um estilo de scroll mais sutil para o feed FINTA */
