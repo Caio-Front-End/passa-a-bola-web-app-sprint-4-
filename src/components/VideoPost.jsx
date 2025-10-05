@@ -1,8 +1,14 @@
+// src/components/VideoPost.jsx
 import { useState, useRef, useEffect } from 'react';
+import { db } from '../firebase';
+import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore'; // Adicione arrayUnion e arrayRemove
+import { useAuth } from '../hooks/useAuth'; // Importe o useAuth
 import { Heart, MessageCircle, Send, VolumeX, Volume2 } from 'lucide-react';
 
-const VideoPost = ({ videoData }) => {
-  const [isLiked, setIsLiked] = useState(false);
+const VideoPost = ({ videoData, onCommentClick }) => {
+  const { currentUser } = useAuth(); // Obtenha o usuário atual
+  // O estado inicial do "like" agora vem da prop
+  const [isLiked, setIsLiked] = useState(videoData.isInitiallyLiked);
   const [likes, setLikes] = useState(videoData.likes);
   const [isMuted, setIsMuted] = useState(
     () => window.isFintaVideoMuted ?? true,
@@ -10,11 +16,42 @@ const VideoPost = ({ videoData }) => {
   const [showVolumeIcon, setShowVolumeIcon] = useState(false);
   const videoRef = useRef(null);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes(isLiked ? likes - 1 : likes + 1);
-  };
+  const handleLike = async (e) => {
+    e.stopPropagation();
+    if (!currentUser) return; // Não faz nada se o usuário não estiver logado
 
+    const videoDocRef = doc(db, 'videos', videoData.id);
+    const newIsLiked = !isLiked;
+
+    setIsLiked(newIsLiked);
+    setLikes(newIsLiked ? likes + 1 : likes - 1);
+
+    try {
+      if (newIsLiked) {
+        // Adiciona o UID do usuário na lista de likes E incrementa o contador
+        await updateDoc(videoDocRef, {
+          likes: increment(1),
+          likedBy: arrayUnion(currentUser.uid)
+        });
+      } else {
+        // Remove o UID do usuário da lista E decrementa o contador
+        await updateDoc(videoDocRef, {
+          likes: increment(-1),
+          likedBy: arrayRemove(currentUser.uid)
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o like:", error);
+      setIsLiked(!newIsLiked);
+      setLikes(likes);
+    }
+  };
+  
+  // ... (o restante do seu componente continua igual)
+  const handleOpenComments = (e) => {
+    e.stopPropagation();
+    onCommentClick(videoData.id, videoData.user.name);
+  };
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -26,10 +63,7 @@ const VideoPost = ({ videoData }) => {
           if (isMuted !== preferredMuteState) {
             setIsMuted(preferredMuteState);
           }
-
-          // AQUI: Reinicia o vídeo para o começo
           videoElement.currentTime = 0;
-
           videoElement
             .play()
             .catch((error) => console.log('Video play failed:', error));
@@ -51,9 +85,8 @@ const VideoPost = ({ videoData }) => {
       }
     };
   }, [isMuted]);
-
   const toggleMute = (e) => {
-    if (e.target.closest('.like-button-container')) {
+    if (e.target.closest('.action-button')) {
       return;
     }
 
@@ -63,7 +96,6 @@ const VideoPost = ({ videoData }) => {
     setShowVolumeIcon(true);
     setTimeout(() => setShowVolumeIcon(false), 800);
   };
-
   return (
     <div
       className="relative h-full w-full snap-start flex-shrink-0 bg-black cursor-pointer"
@@ -101,10 +133,11 @@ const VideoPost = ({ videoData }) => {
         </div>
         <p className="text-sm">{videoData.caption}</p>
       </div>
+
       <div className="absolute right-2 bottom-24 flex flex-col items-center space-y-4 text-white">
         <button
           onClick={handleLike}
-          className="flex flex-col items-center like-button-container"
+          className="flex flex-col items-center action-button"
         >
           <Heart
             size={32}
@@ -114,11 +147,14 @@ const VideoPost = ({ videoData }) => {
           />
           <span className="text-xs font-semibold">{likes}</span>
         </button>
-        <button className="flex flex-col items-center">
+        <button
+          onClick={handleOpenComments}
+          className="flex flex-col items-center action-button"
+        >
           <MessageCircle size={32} />
           <span className="text-xs font-semibold">{videoData.comments}</span>
         </button>
-        <button className="flex flex-col items-center">
+        <button className="flex flex-col items-center action-button">
           <Send size={32} />
         </button>
       </div>
