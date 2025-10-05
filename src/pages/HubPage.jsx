@@ -8,14 +8,13 @@ import {
   Trash2,
 } from 'lucide-react';
 import { SoccerBall } from 'phosphor-react';
-import { useAuth } from '../hooks/useAuth.js';
-import AgendaCalendario from '../components/AgendaCalendario.jsx';
-import JogoModal from '../components/JogoModal.jsx';
-import ManagementModal from '../components/ManagementModal.jsx';
-import { proximoJogoInfo } from '../data/jogoData.js';
-import { format } from 'date-fns';
+import { useAuth } from './../hooks/useAuth.js';
+import AgendaCalendario from './../components/AgendaCalendario.jsx';
+import JogoModal from './../components/JogoModal.jsx';
+import ManagementModal from './../components/ManagementModal.jsx';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { db } from '../firebase.js';
+import { db } from './../firebase.js';
 import {
   collection,
   query,
@@ -44,50 +43,62 @@ const HubPage = () => {
   );
   const [activeTab, setActiveTab] = useState('participating');
   const [loadingChampionships, setLoadingChampionships] = useState(true);
+  const [upcomingGames, setUpcomingGames] = useState([]);
+  const [nextGame, setNextGame] = useState(null);
+  const [selectedGameForModal, setSelectedGameForModal] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
 
     setLoadingChampionships(true);
     const championshipsRef = collection(db, 'championships');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const createdQuery = query(
       championshipsRef,
       where('organizerUid', '==', currentUser.uid),
     );
-    const unsubscribeCreated = onSnapshot(createdQuery, (snapshot) => {
-      const champs = snapshot.docs.map((doc) => ({
+    const unsubscribeCreated = onSnapshot(createdQuery, (createdSnapshot) => {
+      const createdChamps = createdSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setCreatedChampionships(champs);
+      setCreatedChampionships(createdChamps);
+
+      const participatingQuery = query(
+        championshipsRef,
+        where('participants', 'array-contains-any', [
+          {
+            uid: currentUser.uid,
+            name: currentUser.displayName || currentUser.name,
+          },
+        ]),
+      );
+
+      const unsubscribeParticipating = onSnapshot(
+        participatingQuery,
+        (participatingSnapshot) => {
+          const participatingChamps = participatingSnapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .filter((champ) => champ.organizerUid !== currentUser.uid);
+          setParticipatingChampionships(participatingChamps);
+
+          const allUserChamps = [...createdChamps, ...participatingChamps];
+          const futureGames = allUserChamps
+            .filter((champ) => champ.date && parseISO(champ.date) >= today)
+            .sort((a, b) => parseISO(a.date) - parseISO(b.date));
+
+          setUpcomingGames(futureGames);
+          setNextGame(futureGames.length > 0 ? futureGames[0] : null);
+          setLoadingChampionships(false);
+        },
+      );
+
+      return () => unsubscribeParticipating();
     });
 
-    const participatingQuery = query(
-      championshipsRef,
-      where('participants', 'array-contains', {
-        uid: currentUser.uid,
-        name: currentUser.displayName || currentUser.name,
-      }),
-    );
-    const unsubscribeParticipating = onSnapshot(
-      participatingQuery,
-      (snapshot) => {
-        const champs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setParticipatingChampionships(
-          champs.filter((c) => c.organizerUid !== currentUser.uid),
-        );
-        setLoadingChampionships(false);
-      },
-    );
-
-    return () => {
-      unsubscribeCreated();
-      unsubscribeParticipating();
-    };
+    return () => unsubscribeCreated();
   }, [currentUser]);
 
   const handleLeaveChampionship = async (championship) => {
@@ -124,6 +135,7 @@ const HubPage = () => {
   };
 
   const handleDeleteChampionship = async (championshipId) => {
+    // A confirmação customizada deve ser implementada aqui
     const championshipRef = doc(db, 'championships', championshipId);
     try {
       await deleteDoc(championshipRef);
@@ -160,10 +172,30 @@ const HubPage = () => {
     setActiveModal('management');
   };
 
-  const handleOpenModal = (modalName) => setActiveModal(modalName);
+  const handleOpenGameModal = (game) => {
+    if (!game) return;
+    const gameInfo = {
+      data: parseISO(game.date),
+      timeCasa: { nome: 'Seu Time' },
+      adversario: { nome: 'Time B' },
+      campeonato: game.name,
+      horario: game.time,
+      historico: [],
+      elencoAdversario: {
+        atacantes: [],
+        meioCampo: [],
+        defensores: [],
+        goleira: [],
+      },
+    };
+    setSelectedGameForModal(gameInfo);
+    setActiveModal('jogo');
+  };
+
   const handleCloseModal = () => {
     setActiveModal(null);
     setSelectedChampionship(null);
+    setSelectedGameForModal(null);
   };
 
   if (!currentUser) {
@@ -175,10 +207,10 @@ const HubPage = () => {
   }
 
   const ChampionshipCard = ({ champ, onClick, onAction, actionType }) => (
-    <div className="relative">
+    <div className="relative group">
       <button
         onClick={() => onClick(champ)}
-        className="w-full text-left bg-[var(--bg-color2)] rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[var(--primary-color)] transition-all duration-300 overflow-hidden hover:scale-101"
+        className="w-full text-left bg-[var(--bg-color2)] rounded-lg shadow border border-transparent hover:shadow-lg cursor-pointer hover:border-[var(--primary-color)] transition-all duration-300 overflow-hidden"
       >
         <div className="p-4">
           <p className="font-semibold text-white mb-1 truncate pr-8">
@@ -207,7 +239,7 @@ const HubPage = () => {
           e.stopPropagation();
           onAction(actionType === 'delete' ? champ.id : champ);
         }}
-        className="absolute top-2 right-2 p-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+        className="absolute top-2 right-2 p-2 text-gray-500 hover:text-red-500 bg-transparent hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
         aria-label={
           actionType === 'delete' ? 'Excluir campeonato' : 'Sair do campeonato'
         }
@@ -232,7 +264,10 @@ const HubPage = () => {
             <h2 className="font-semibold text-2xl mb-3 text-white">
               Calendário de Jogos
             </h2>
-            <AgendaCalendario />
+            <AgendaCalendario
+              upcomingGames={upcomingGames}
+              onGameClick={handleOpenGameModal}
+            />
 
             <div className="pt-6">
               <h2 className="font-semibold text-2xl mb-4 text-white">
@@ -313,28 +348,32 @@ const HubPage = () => {
               <h2 className="font-semibold text-2xl mb-3 text-white">
                 Próximo Jogo
               </h2>
-              <button
-                onClick={() => handleOpenModal('proximoJogo')}
-                className="w-full text-left bg-[var(--primary-color)] text-white p-5 rounded-lg shadow-lg flex items-center space-x-4 cursor-pointer hover:bg-[var(--primary-color-hover)] transition-all hover:scale-101 "
-              >
-                <div className="text-center">
-                  <p className="text-4xl font-bold">
-                    {proximoJogoInfo.data.getDate()}
-                  </p>
-                  <p className="text-md font-semibold">
-                    {format(proximoJogoInfo.data, 'MMM', {
-                      locale: ptBR,
-                    }).toUpperCase()}
-                  </p>
+              {nextGame ? (
+                <button
+                  onClick={() => handleOpenGameModal(nextGame)}
+                  className="w-full text-left bg-[var(--primary-color)] text-white p-5 rounded-lg shadow-lg flex items-center space-x-4 cursor-pointer hover:bg-[var(--primary-color-hover)] transition-all hover:scale-101 "
+                >
+                  <div className="text-center">
+                    <p className="text-4xl font-bold">
+                      {format(parseISO(nextGame.date), 'dd')}
+                    </p>
+                    <p className="text-md font-semibold">
+                      {format(parseISO(nextGame.date), 'MMM', {
+                        locale: ptBR,
+                      }).toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="border-l-2 border-[var(--bg-color2)] pl-4 flex-grow">
+                    <p className="font-semibold">{nextGame.name}</p>
+                    <p className="text-xl font-bold">vs Time B</p>
+                    <p className="text-sm">{nextGame.time}</p>
+                  </div>
+                </button>
+              ) : (
+                <div className="w-full text-center bg-[var(--bg-color2)] text-gray-400 p-5 rounded-lg shadow-lg">
+                  <p>Nenhum jogo agendado.</p>
                 </div>
-                <div className="border-l-2 border-[var(--bg-color2)] pl-4 flex-grow">
-                  <p className="font-semibold">Próximo Jogo</p>
-                  <p className="text-xl font-bold">
-                    vs {proximoJogoInfo.adversario.nome}
-                  </p>
-                  <p className="text-sm">{proximoJogoInfo.horario}</p>
-                </div>
-              </button>
+              )}
             </div>
 
             <div>
@@ -362,8 +401,8 @@ const HubPage = () => {
         </div>
       </div>
 
-      {activeModal === 'proximoJogo' && (
-        <JogoModal onClose={handleCloseModal} jogoInfo={proximoJogoInfo} />
+      {activeModal === 'jogo' && selectedGameForModal && (
+        <JogoModal onClose={handleCloseModal} jogoInfo={selectedGameForModal} />
       )}
       {activeModal === 'management' && selectedChampionship && (
         <ManagementModal
