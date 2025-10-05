@@ -1,37 +1,9 @@
 import { useState } from 'react';
-import ModalWrapper from './ModalWrapper.jsx';
-import { useAuth } from '../hooks/useAuth.js';
-import { db } from '../firebase.js';
+import ModalWrapper from './ModalWrapper';
+import { useAuth } from '../hooks/useAuth';
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, ArrowRight, CheckCircle, Copy } from 'lucide-react';
-
-const StepIndicator = ({ currentStep }) => {
-  const steps = [1, 2, 3];
-  return (
-    <div className="flex items-center justify-center mb-6">
-      {steps.map((s, index) => (
-        <div key={s} className="flex items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors duration-300 ${
-              currentStep >= s
-                ? 'bg-[var(--primary-color)] text-white'
-                : 'bg-gray-700 text-gray-400'
-            }`}
-          >
-            {s}
-          </div>
-          {index < steps.length - 1 && (
-            <div
-              className={`w-12 h-1 transition-colors duration-300 ${
-                currentStep > s ? 'bg-[var(--primary-color)]' : 'bg-gray-700'
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const CreateChampionshipModal = ({ onClose }) => {
   const { currentUser } = useAuth();
@@ -47,7 +19,7 @@ const CreateChampionshipModal = ({ onClose }) => {
     time: '',
     format: 'rachao',
     modality: 'futsal',
-    maxCapacity: '',
+    numberOfTeams: 2, // Novo campo, valor inicial 2
     access: 'publico',
     password: '',
     teamFormation: 'manual',
@@ -57,6 +29,10 @@ const CreateChampionshipModal = ({ onClose }) => {
   const [createdChampionshipId, setCreatedChampionshipId] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  const playersPerTeam = { futsal: 5, society: 7, campo: 11 };
+  const calculatedMaxCapacity =
+    formData.numberOfTeams * playersPerTeam[formData.modality];
+
   const handleNext = () => {
     if (step === 1) {
       if (!formData.name || !formData.cep || !formData.date || !formData.time) {
@@ -65,16 +41,8 @@ const CreateChampionshipModal = ({ onClose }) => {
       }
     }
     if (step === 2) {
-      const minCapacity = { futsal: 10, society: 14, campo: 22 };
-      if (
-        !formData.maxCapacity ||
-        parseInt(formData.maxCapacity) < minCapacity[formData.modality]
-      ) {
-        setError(
-          `A capacidade mínima para ${formData.modality} é de ${
-            minCapacity[formData.modality]
-          } atletas.`,
-        );
+      if (!formData.numberOfTeams || parseInt(formData.numberOfTeams) < 2) {
+        setError('O campeonato precisa ter pelo menos 2 times.');
         return;
       }
     }
@@ -120,13 +88,44 @@ const CreateChampionshipModal = ({ onClose }) => {
     setLoading(true);
 
     try {
-      const docRef = await addDoc(collection(db, 'championships'), {
+      const maxCapacity = calculatedMaxCapacity;
+
+      const newChampionshipData = {
         ...formData,
+        maxCapacity, // Salva a capacidade calculada
         organizerUid: currentUser.uid,
         organizerName: currentUser.displayName || currentUser.name,
-        participants: [],
+        participants: [
+          {
+            uid: currentUser.uid,
+            name: currentUser.displayName || currentUser.name,
+          },
+        ],
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (formData.teamFormation === 'manual') {
+        const teams = [];
+        for (let i = 0; i < formData.numberOfTeams; i++) {
+          const team = {
+            name: `Time ${String.fromCharCode(65 + i)}`, // Time A, Time B, etc.
+            players: [],
+          };
+          if (i === 0) {
+            team.players.push({
+              uid: currentUser.uid,
+              name: currentUser.displayName || currentUser.name,
+            });
+          }
+          teams.push(team);
+        }
+        newChampionshipData.teams = teams;
+      }
+
+      const docRef = await addDoc(
+        collection(db, 'championships'),
+        newChampionshipData,
+      );
       console.log('Campeonato salvo com ID: ', docRef.id);
       setCreatedChampionshipId(docRef.id);
     } catch (e) {
@@ -162,18 +161,16 @@ const CreateChampionshipModal = ({ onClose }) => {
             Compartilhe o ID abaixo para que outras atletas possam encontrar seu
             campeonato:
           </p>
-          <div className="space-y-2">
-            <div className="bg-gray-900 rounded-lg p-3 text-center">
-              <span className="font-mono text-lg text-gray-300 break-all">
-                {createdChampionshipId}
-              </span>
-            </div>
+          <div className="bg-gray-900 rounded-lg p-3 flex flex-col items-center justify-between gap-4">
+            <span className="font-mono text-lg text-gray-300">
+              {createdChampionshipId}
+            </span>
             <button
               onClick={handleCopyToClipboard}
-              className="w-full bg-[var(--primary-color)] text-white px-3 py-2 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
+              className="w-full mt-2 bg-[var(--primary-color)] text-white px-3 py-2 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
             >
               <Copy size={16} />
-              {copied ? 'Copiado!' : 'Copiar'}
+              {copied ? 'Copiado!' : 'Copiar ID'}
             </button>
           </div>
           <button
@@ -286,18 +283,22 @@ const CreateChampionshipModal = ({ onClose }) => {
               onChange={handleChange}
               className="w-full p-2 bg-[var(--bg-color2)] rounded-md text-white"
             >
-              <option value="futsal">Futsal</option>
-              <option value="society">Society</option>
-              <option value="campo">Campo</option>
+              <option value="futsal">Futsal (5 por time)</option>
+              <option value="society">Society (7 por time)</option>
+              <option value="campo">Campo (11 por time)</option>
             </select>
             <input
               type="number"
-              name="maxCapacity"
-              placeholder="Capacidade Máxima de Atletas"
-              value={formData.maxCapacity}
+              name="numberOfTeams"
+              placeholder="Quantidade de Times"
+              value={formData.numberOfTeams}
               onChange={handleChange}
               className="w-full p-2 bg-[var(--bg-color2)] rounded-md text-white"
+              min="2"
             />
+            <p className="text-sm text-gray-400 text-center">
+              Total de atletas: {calculatedMaxCapacity}
+            </p>
           </div>
         );
       case 3:
@@ -341,11 +342,38 @@ const CreateChampionshipModal = ({ onClose }) => {
     }
   };
 
+  const StepIndicator = ({ currentStep }) => {
+    return (
+      <div className="flex justify-center items-center mb-4">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors ${
+                currentStep >= s
+                  ? 'bg-[var(--primary-color)] text-white'
+                  : 'bg-gray-700 text-gray-400'
+              }`}
+            >
+              {s}
+            </div>
+            {s < 3 && (
+              <div
+                className={`w-12 h-1 transition-colors ${
+                  currentStep > s ? 'bg-[var(--primary-color)]' : 'bg-gray-700'
+                }`}
+              ></div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <ModalWrapper title="Criar Novo Campeonato" onClose={onClose}>
       <div className="p-6">
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         {!createdChampionshipId && <StepIndicator currentStep={step} />}
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         {renderStep()}
         {!createdChampionshipId && (
           <div className="flex justify-between mt-6">
