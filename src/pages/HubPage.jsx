@@ -8,13 +8,13 @@ import {
   Trash2,
 } from 'lucide-react';
 import { SoccerBall } from 'phosphor-react';
-import { useAuth } from './../hooks/useAuth.js';
-import AgendaCalendario from './../components/AgendaCalendario.jsx';
-import JogoModal from './../components/JogoModal.jsx';
-import ManagementModal from './../components/ManagementModal.jsx';
+import { useAuth } from '../hooks/useAuth.js';
+import AgendaCalendario from '../components/AgendaCalendario.jsx';
+import JogoModal from '../components/JogoModal.jsx';
+import ManagementModal from '../components/ManagementModal.jsx';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { db } from './../firebase.js';
+import { db } from '../firebase.js';
 import {
   collection,
   query,
@@ -239,7 +239,7 @@ const HubPage = () => {
           e.stopPropagation();
           onAction(actionType === 'delete' ? champ.id : champ);
         }}
-        className="absolute top-2 right-2 p-2 text-gray-500 hover:text-red-500 bg-transparent hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+        className="absolute top-2 right-2 p-2 text-gray-500 hover:text-red-500 bg-transparent hover:bg-red-500/10 rounded-full transition-colors"
         aria-label={
           actionType === 'delete' ? 'Excluir campeonato' : 'Sair do campeonato'
         }
