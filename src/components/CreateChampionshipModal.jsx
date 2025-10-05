@@ -8,8 +8,8 @@ import {
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { db } from '../firebase';
+import { useAuth } from '../hooks/useAuth.js';
+import { db } from '../firebase.js';
 import { collection, addDoc } from 'firebase/firestore';
 
 const Step1 = ({ formData, setFormData, handleCep }) => (
