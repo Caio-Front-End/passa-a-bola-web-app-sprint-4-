@@ -9,6 +9,7 @@ function BackButton() {
       // Melhoria: navigate(-1) volta para a página anterior na história de navegação
       onClick={() => navigate(-1)}
       className="
+        md:hidden // --- ADICIONADO: Esconde o botão em telas de desktop ---
         fixed top-5 left-5 z-50
         w-12 h-12
         backdrop-blur-xs
@@ -29,4 +30,3 @@ function BackButton() {
 }
 
 export default BackButton;
-

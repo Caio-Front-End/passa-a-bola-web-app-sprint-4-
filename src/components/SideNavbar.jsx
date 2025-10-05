@@ -1,12 +1,14 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { House, MapTrifold, FilmStrip, SignOut } from 'phosphor-react';
+// --- ALTERAÇÃO AQUI ---
+import { House, Trophy, FilmStrip, SignOut } from 'phosphor-react'; // Trocado MapTrifold por Trophy
 import { Bot } from 'lucide-react';
 import logoPabOriginal from '../assets/img/logo-pab-original.png';
 
 const SideNavBar = () => {
   const { currentUser, logout } = useAuth();
 
+  // --- ALTERAÇÃO AQUI ---
   const finalNavItems = [
     {
       path: '/',
@@ -16,9 +18,9 @@ const SideNavBar = () => {
     },
     {
       path: '/courts',
-      icon: <MapTrifold size={28} />,
-      activeIcon: <MapTrifold size={28} weight="fill" />,
-      label: 'Quadras',
+      icon: <Trophy size={28} />, // Ícone alterado
+      activeIcon: <Trophy size={28} weight="fill" />, // Ícone alterado
+      label: 'Campeonatos', // Nome alterado
     },
     {
       path: '/chatbot',
@@ -36,15 +38,12 @@ const SideNavBar = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-
   const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const handleNavigate = (destinationPath) => {
-    // Usamos 'routes' aqui para garantir a direção correta na animação
     const currentIndex = routes.indexOf(location.pathname);
     const destinationIndex = routes.indexOf(destinationPath);
 
-    // Se a rota de destino não estiver na lista ou for a mesma, apenas navega
     if (
       currentIndex === -1 ||
       destinationIndex === -1 ||
