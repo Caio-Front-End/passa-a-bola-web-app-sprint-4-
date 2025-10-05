@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { db } from '../firebase.js';
+import { useState, useEffect, useMemo } from 'react';
+import { db } from '../firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
-import { ArrowRight, Search, Plus, Clock } from 'lucide-react';
-import CreateChampionshipModal from '../components/CreateChampionshipModal.jsx';
+import { ArrowRight, Search, Plus, Clock, X } from 'lucide-react';
+import CreateChampionshipModal from '../components/CreateChampionshipModal';
 
 const CourtsPage = () => {
-  const [championships, setChampionships] = useState([]);
+  const [allChampionships, setAllChampionships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // States for filters
+  const [searchId, setSearchId] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedModality, setSelectedModality] = useState('');
+  const [selectedFormat, setSelectedFormat] = useState('');
 
   useEffect(() => {
     const fetchChampionships = async () => {
@@ -27,7 +33,7 @@ const CourtsPage = () => {
           return dateB - dateA;
         });
 
-        setChampionships(champsList);
+        setAllChampionships(champsList);
       } catch (error) {
         console.error('Erro ao buscar campeonatos:', error);
       }
@@ -37,12 +43,55 @@ const CourtsPage = () => {
     fetchChampionships();
   }, [isModalOpen]);
 
+  // Memoized lists for filters and filtered results
+  const availableCities = useMemo(() => {
+    const cities = allChampionships.map((champ) => champ.city).filter(Boolean);
+    return [...new Set(cities)];
+  }, [allChampionships]);
+
+  const filteredChampionships = useMemo(() => {
+    return allChampionships.filter((champ) => {
+      const matchId = searchId
+        ? champ.id.toLowerCase().includes(searchId.toLowerCase())
+        : true;
+      const matchCity = selectedCity ? champ.city === selectedCity : true;
+      const matchModality = selectedModality
+        ? champ.modality === selectedModality
+        : true;
+      const matchFormat = selectedFormat
+        ? champ.format === selectedFormat
+        : true;
+      return matchId && matchCity && matchModality && matchFormat;
+    });
+  }, [
+    allChampionships,
+    searchId,
+    selectedCity,
+    selectedModality,
+    selectedFormat,
+  ]);
+
+  const isAnyFilterActive = useMemo(() => {
+    return (
+      searchId !== '' ||
+      selectedCity !== '' ||
+      selectedModality !== '' ||
+      selectedFormat !== ''
+    );
+  }, [searchId, selectedCity, selectedModality, selectedFormat]);
+
+  const handleClearFilters = () => {
+    setSearchId('');
+    setSelectedCity('');
+    setSelectedModality('');
+    setSelectedFormat('');
+  };
+
   const formatDate = (dateString) => {
     if (!dateString || typeof dateString !== 'string') {
       return { day: '??', month: '???' };
     }
     try {
-      // Trata a data como local para evitar problemas de fuso horário
       const date = new Date(dateString.replace(/-/g, '/'));
       const displayDay = date.getDate();
       const displayMonth = date
@@ -71,7 +120,7 @@ const CourtsPage = () => {
           </button>
         </header>
 
-        <div className="mb-8">
+        <div className="space-y-4 mb-8">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -81,8 +130,56 @@ const CourtsPage = () => {
               type="text"
               placeholder="Buscar por ID do campeonato..."
               className="w-full pl-10 pr-3 py-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
             />
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+            >
+              <option value="">Todas as Cidades</option>
+              {availableCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedModality}
+              onChange={(e) => setSelectedModality(e.target.value)}
+              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+            >
+              <option value="">Todas as Modalidades</option>
+              <option value="futsal">Futsal</option>
+              <option value="society">Society</option>
+              <option value="campo">Campo</option>
+            </select>
+            <select
+              value={selectedFormat}
+              onChange={(e) => setSelectedFormat(e.target.value)}
+              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+            >
+              <option value="">Todos os Formatos</option>
+              <option value="rachao">Rachão</option>
+              <option value="mata-mata">Mata-Mata</option>
+              <option value="grupos-mata-mata">Grupos + Mata-Mata</option>
+              <option value="pontos-corridos">Pontos Corridos</option>
+            </select>
+          </div>
+          {isAnyFilterActive && (
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handleClearFilters}
+                className="text-sm text-gray-400 hover:text-white font-semibold flex items-center gap-1 bg-[var(--bg-color2)] px-3 py-2 rounded-md"
+              >
+                <X size={16} />
+                Limpar Filtros
+              </button>
+            </div>
+          )}
         </div>
 
         <h2 className="font-semibold text-2xl mb-4 text-white">
@@ -91,9 +188,9 @@ const CourtsPage = () => {
 
         {loading ? (
           <p>Carregando campeonatos...</p>
-        ) : championships.length > 0 ? (
+        ) : filteredChampionships.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {championships.map((champ) => {
+            {filteredChampionships.map((champ) => {
               const { day, month } = formatDate(champ.date);
               return (
                 <div
@@ -152,7 +249,7 @@ const CourtsPage = () => {
         ) : (
           <div className="text-center py-12 bg-[var(--bg-color2)] rounded-lg">
             <p className="text-gray-400">
-              Nenhum campeonato encontrado no momento.
+              Nenhum campeonato encontrado com os filtros selecionados.
             </p>
           </div>
         )}
