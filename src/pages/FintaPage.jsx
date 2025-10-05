@@ -1,8 +1,6 @@
-// src/pages/FintaPage.jsx
-
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { useAuth } from '../hooks/useAuth'; // Importe o useAuth
+import { useAuth } from '../hooks/useAuth';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import VideoPost from '../components/VideoPost';
 import UploadModal from '../components/UploadModal';
@@ -15,7 +13,20 @@ const FintaPage = () => {
   const [loading, setLoading] = useState(true);
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
   const [activeCommentSection, setActiveCommentSection] = useState({ videoId: null, author: '' });
-  const { currentUser } = useAuth(); // Obtenha o usuário atual
+  const { currentUser } = useAuth();
+  
+  // 1. Novo estado para rastrear o vídeo visível
+  const [visibleVideoInfo, setVisibleVideoInfo] = useState({ id: null, author: '' });
+
+  // 2. useEffect para sincronizar o painel de comentários com o vídeo visível
+  useEffect(() => {
+    // Se o painel de comentários estiver aberto E o vídeo visível mudou...
+    if (activeCommentSection.videoId && visibleVideoInfo.id && activeCommentSection.videoId !== visibleVideoInfo.id) {
+      // ...atualize o painel com as informações do novo vídeo.
+      setActiveCommentSection({ videoId: visibleVideoInfo.id, author: visibleVideoInfo.author });
+    }
+  }, [visibleVideoInfo, activeCommentSection.videoId]);
+
 
   useEffect(() => {
     const fetchVideosAndUsers = async () => {
@@ -56,7 +67,6 @@ const FintaPage = () => {
             video.avatarUrl ||
             `https://placehold.co/40x40/b554b5/FFFFFF?text=${initial}`;
             
-          // LÓGICA DO LIKE PERSISTENTE: Verifique se o usuário curtiu o vídeo
           const isLikedByUser = video.likedBy?.includes(currentUser.uid) || false;
 
           return {
@@ -66,7 +76,7 @@ const FintaPage = () => {
             caption: video.caption,
             likes: video.likes || 0,
             comments: video.comments || 0,
-            isInitiallyLiked: isLikedByUser, // Passe a informação como prop
+            isInitiallyLiked: isLikedByUser,
           };
         });
 
@@ -77,10 +87,10 @@ const FintaPage = () => {
       setLoading(false);
     };
 
-    if (currentUser) { // Garante que o usuário já foi carregado
+    if (currentUser) {
         fetchVideosAndUsers();
     }
-  }, [currentUser]); // Adicione currentUser como dependência
+  }, [currentUser]);
 
   const handleOpenComments = (videoId, author) => {
     setActiveCommentSection({ videoId, author });
@@ -90,6 +100,11 @@ const FintaPage = () => {
     setActiveCommentSection({ videoId: null, author: '' });
   };
   
+  // 3. Função para ser chamada pelo VideoPost
+  const handleVideoInView = (id, author) => {
+    setVisibleVideoInfo({ id, author });
+  };
+
   if (loading) {
     return (
       <div className="h-full w-full bg-black flex justify-center items-center text-white">
@@ -100,7 +115,6 @@ const FintaPage = () => {
 
   return (
     <div className="h-full w-full bg-black flex justify-center relative overflow-hidden">
-      {/* ... (código do botão de postar vídeo continua igual) ... */}
       <motion.button
         onClick={() => setUploadModalOpen(true)}
         className="absolute top-5 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
@@ -112,8 +126,7 @@ const FintaPage = () => {
       >
         <Plus size={28} strokeWidth={2.5} />
       </motion.button>
-      
-      {/* Container do Vídeo */}
+
       <div
         className={`h-full bg-neutral-900 transition-all duration-300 ease-in-out ${activeCommentSection.videoId ? 'md:w-[60%]' : 'w-full'}`}
       >
@@ -122,17 +135,17 @@ const FintaPage = () => {
             <VideoPost 
               key={video.id} 
               videoData={video} 
-              onCommentClick={handleOpenComments} 
+              onCommentClick={handleOpenComments}
+              onVideoInView={handleVideoInView} // 4. Passe a nova função como prop
             />
           ))}
         </div>
       </div>
-
-      {/* ... (código do painel de comentários continua igual) ... */}
+      
+      {/* O resto do JSX continua igual */}
       <AnimatePresence>
         {activeCommentSection.videoId && (
           <>
-            {/* VERSÃO DESKTOP: Coluna lateral */}
             <motion.div
               className="hidden md:block h-full w-[40%]"
               initial={{ x: '100%' }}
@@ -140,14 +153,13 @@ const FintaPage = () => {
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
-              <CommentSection
+              <CommentSection 
                 videoId={activeCommentSection.videoId} 
                 videoAuthor={activeCommentSection.author}
                 onClose={handleCloseComments} 
               />
             </motion.div>
 
-            {/* VERSÃO MOBILE: Painel inferior */}
             <div className="md:hidden fixed inset-0 z-30">
               <motion.div
                 className="absolute inset-0 bg-black/50"

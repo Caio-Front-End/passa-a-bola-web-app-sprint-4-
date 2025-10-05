@@ -1,77 +1,32 @@
-// src/components/VideoPost.jsx
 import { useState, useRef, useEffect } from 'react';
 import { db } from '../firebase';
-import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore'; // Adicione arrayUnion e arrayRemove
-import { useAuth } from '../hooks/useAuth'; // Importe o useAuth
+import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { useAuth } from '../hooks/useAuth';
 import { Heart, MessageCircle, Send, VolumeX, Volume2 } from 'lucide-react';
 
-const VideoPost = ({ videoData, onCommentClick }) => {
-  const { currentUser } = useAuth(); // Obtenha o usuário atual
-  // O estado inicial do "like" agora vem da prop
+const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
+  const { currentUser } = useAuth();
   const [isLiked, setIsLiked] = useState(videoData.isInitiallyLiked);
   const [likes, setLikes] = useState(videoData.likes);
-  const [isMuted, setIsMuted] = useState(
-    () => window.isFintaVideoMuted ?? true,
-  );
+  const [isMuted, setIsMuted] = useState(() => window.isFintaVideoMuted ?? true);
   const [showVolumeIcon, setShowVolumeIcon] = useState(false);
   const videoRef = useRef(null);
 
-  const handleLike = async (e) => {
-    e.stopPropagation();
-    if (!currentUser) return; // Não faz nada se o usuário não estiver logado
+  // --- CORREÇÃO PRINCIPAL: Abordagem baseada em estado ---
+  const [shouldPlay, setShouldPlay] = useState(false);
 
-    const videoDocRef = doc(db, 'videos', videoData.id);
-    const newIsLiked = !isLiked;
-
-    setIsLiked(newIsLiked);
-    setLikes(newIsLiked ? likes + 1 : likes - 1);
-
-    try {
-      if (newIsLiked) {
-        // Adiciona o UID do usuário na lista de likes E incrementa o contador
-        await updateDoc(videoDocRef, {
-          likes: increment(1),
-          likedBy: arrayUnion(currentUser.uid)
-        });
-      } else {
-        // Remove o UID do usuário da lista E decrementa o contador
-        await updateDoc(videoDocRef, {
-          likes: increment(-1),
-          likedBy: arrayRemove(currentUser.uid)
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar o like:", error);
-      setIsLiked(!newIsLiked);
-      setLikes(likes);
-    }
-  };
-  
-  // ... (o restante do seu componente continua igual)
-  const handleOpenComments = (e) => {
-    e.stopPropagation();
-    onCommentClick(videoData.id, videoData.user.name);
-  };
+  // Este useEffect observa o vídeo e apenas atualiza o estado 'shouldPlay'
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const videoElement = videoRef.current;
-        if (!videoElement) return;
-
         if (entry.isIntersecting) {
-          const preferredMuteState = window.isFintaVideoMuted ?? true;
-          if (isMuted !== preferredMuteState) {
-            setIsMuted(preferredMuteState);
-          }
-          videoElement.currentTime = 0;
-          videoElement
-            .play()
-            .catch((error) => console.log('Video play failed:', error));
+          setShouldPlay(true);
+          onVideoInView(videoData.id, videoData.user.name);
         } else {
-          videoElement.pause();
+          setShouldPlay(false);
         }
       },
-      { threshold: 0.5 },
+      { threshold: 0.7 }
     );
 
     const currentVideoRef = videoRef.current;
@@ -84,7 +39,64 @@ const VideoPost = ({ videoData, onCommentClick }) => {
         observer.unobserve(currentVideoRef);
       }
     };
-  }, [isMuted]);
+  }, [videoData.id, videoData.user.name, onVideoInView]);
+
+  // Este useEffect reage ao estado 'shouldPlay' para controlar o vídeo
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    if (shouldPlay) {
+      videoElement.currentTime = 0;
+      const playPromise = videoElement.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          // Ignora o erro normal de abortar o play com scroll rápido
+          if (error.name !== 'AbortError') {
+            console.error("Erro ao tentar tocar o vídeo:", error);
+          }
+        });
+      }
+    } else {
+      videoElement.pause();
+    }
+  }, [shouldPlay]); // Depende apenas do estado 'shouldPlay'
+
+  // O restante das funções permanece igual
+  const handleLike = async (e) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+
+    const videoDocRef = doc(db, 'videos', videoData.id);
+    const newIsLiked = !isLiked;
+
+    setIsLiked(newIsLiked);
+    setLikes(newIsLiked ? likes + 1 : likes - 1);
+
+    try {
+      if (newIsLiked) {
+        await updateDoc(videoDocRef, {
+          likes: increment(1),
+          likedBy: arrayUnion(currentUser.uid)
+        });
+      } else {
+        await updateDoc(videoDocRef, {
+          likes: increment(-1),
+          likedBy: arrayRemove(currentUser.uid)
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o like:", error);
+      setIsLiked(!newIsLiked);
+      setLikes(likes);
+    }
+  };
+
+  const handleOpenComments = (e) => {
+    e.stopPropagation();
+    onCommentClick(videoData.id, videoData.user.name);
+  };
+
   const toggleMute = (e) => {
     if (e.target.closest('.action-button')) {
       return;
@@ -96,6 +108,7 @@ const VideoPost = ({ videoData, onCommentClick }) => {
     setShowVolumeIcon(true);
     setTimeout(() => setShowVolumeIcon(false), 800);
   };
+
   return (
     <div
       className="relative h-full w-full snap-start flex-shrink-0 bg-black cursor-pointer"
