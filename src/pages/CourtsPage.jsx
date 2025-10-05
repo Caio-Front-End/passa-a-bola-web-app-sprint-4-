@@ -1,156 +1,124 @@
 import { useState, useEffect, useMemo } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, query } from 'firebase/firestore';
-import { ArrowRight, Search, Plus, Clock, X } from 'lucide-react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import CreateChampionshipModal from '../components/CreateChampionshipModal';
+import SubscriptionModal from '../components/SubscriptionModal';
+import { Search, X, Filter } from 'lucide-react';
 
 const CourtsPage = () => {
-  const [allChampionships, setAllChampionships] = useState([]);
+  const [championships, setChampionships] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedChampionship, setSelectedChampionship] = useState(null);
 
-  // States for filters
-  const [searchId, setSearchId] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedModality, setSelectedModality] = useState('');
-  const [selectedFormat, setSelectedFormat] = useState('');
+  const [filters, setFilters] = useState({
+    city: '',
+    modality: '',
+    format: '',
+    searchTerm: '',
+  });
 
   useEffect(() => {
-    const fetchChampionships = async () => {
-      setLoading(true);
-      try {
-        const championshipsCollection = collection(db, 'championships');
-        const q = query(championshipsCollection);
-        const querySnapshot = await getDocs(q);
-        const champsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+    setLoading(true);
+    const championshipsCollectionRef = collection(db, 'championships');
 
-        champsList.sort((a, b) => {
-          const dateA = a.createdAt?.toDate() || 0;
-          const dateB = b.createdAt?.toDate() || 0;
-          return dateB - dateA;
-        });
-
-        setAllChampionships(champsList);
-      } catch (error) {
-        console.error('Erro ao buscar campeonatos:', error);
-      }
+    const unsubscribe = onSnapshot(championshipsCollectionRef, (snapshot) => {
+      const champsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // Ordena os campeonatos pela data do evento (campo 'date')
+      champsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+      setChampionships(champsData);
       setLoading(false);
-    };
+    });
 
-    fetchChampionships();
-  }, [isModalOpen]);
+    return () => unsubscribe();
+  }, []);
 
-  // Memoized lists for filters and filtered results
-  const availableCities = useMemo(() => {
-    const cities = allChampionships.map((champ) => champ.city).filter(Boolean);
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({ city: '', modality: '', format: '', searchTerm: '' });
+  };
+
+  const uniqueCities = useMemo(() => {
+    const cities = championships.map((c) => c.city).filter(Boolean);
     return [...new Set(cities)];
-  }, [allChampionships]);
+  }, [championships]);
 
   const filteredChampionships = useMemo(() => {
-    return allChampionships.filter((champ) => {
-      const matchId = searchId
-        ? champ.id.toLowerCase().includes(searchId.toLowerCase())
-        : true;
-      const matchCity = selectedCity ? champ.city === selectedCity : true;
-      const matchModality = selectedModality
-        ? champ.modality === selectedModality
-        : true;
-      const matchFormat = selectedFormat
-        ? champ.format === selectedFormat
-        : true;
-      return matchId && matchCity && matchModality && matchFormat;
+    return championships.filter((champ) => {
+      const matchCity = !filters.city || champ.city === filters.city;
+      const matchModality =
+        !filters.modality || champ.modality === filters.modality;
+      const matchFormat = !filters.format || champ.format === filters.format;
+      const matchSearchTerm =
+        !filters.searchTerm ||
+        champ.id.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+      return matchCity && matchModality && matchFormat && matchSearchTerm;
     });
-  }, [
-    allChampionships,
-    searchId,
-    selectedCity,
-    selectedModality,
-    selectedFormat,
-  ]);
+  }, [championships, filters]);
 
-  const isAnyFilterActive = useMemo(() => {
-    return (
-      searchId !== '' ||
-      selectedCity !== '' ||
-      selectedModality !== '' ||
-      selectedFormat !== ''
-    );
-  }, [searchId, selectedCity, selectedModality, selectedFormat]);
-
-  const handleClearFilters = () => {
-    setSearchId('');
-    setSelectedCity('');
-    setSelectedModality('');
-    setSelectedFormat('');
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString || typeof dateString !== 'string') {
-      return { day: '??', month: '???' };
-    }
-    try {
-      const date = new Date(dateString.replace(/-/g, '/'));
-      const displayDay = date.getDate();
-      const displayMonth = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .toUpperCase();
-      return { day: displayDay, month: displayMonth };
-    } catch (e) {
-      console.error('Error formatting date:', e);
-      return { day: '??', month: '???' };
-    }
-  };
+  const isAnyFilterActive =
+    filters.city || filters.modality || filters.format || filters.searchTerm;
 
   return (
     <>
       <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
-        <header className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+          <h1 className="text-3xl font-bold text-white">
             Central de Campeonatos
           </h1>
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full md:w-auto bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            onClick={() => setCreateModalOpen(true)}
+            className="bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] text-white font-bold py-2 px-6 rounded-lg transition-colors"
           >
-            <Plus size={20} />
-            <span>ORGANIZAR</span>
+            ORGANIZAR
           </button>
-        </header>
+        </div>
 
-        <div className="space-y-4 mb-8">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por ID do campeonato..."
-              className="w-full pl-10 pr-3 py-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Seção de Filtros */}
+        <div className="bg-[var(--bg-color2)] p-4 rounded-lg mb-8 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                name="searchTerm"
+                placeholder="Buscar por ID..."
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                className="w-full pl-10 pr-3 py-2 bg-gray-700/50 rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+              />
+            </div>
             <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+              name="city"
+              value={filters.city}
+              onChange={handleFilterChange}
+              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
             >
               <option value="">Todas as Cidades</option>
-              {availableCities.map((city) => (
+              {uniqueCities.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
               ))}
             </select>
             <select
-              value={selectedModality}
-              onChange={(e) => setSelectedModality(e.target.value)}
-              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+              name="modality"
+              value={filters.modality}
+              onChange={handleFilterChange}
+              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
             >
               <option value="">Todas as Modalidades</option>
               <option value="futsal">Futsal</option>
@@ -158,32 +126,34 @@ const CourtsPage = () => {
               <option value="campo">Campo</option>
             </select>
             <select
-              value={selectedFormat}
-              onChange={(e) => setSelectedFormat(e.target.value)}
-              className="w-full p-3 bg-[var(--bg-color2)] rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+              name="format"
+              value={filters.format}
+              onChange={handleFilterChange}
+              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
             >
               <option value="">Todos os Formatos</option>
               <option value="rachao">Rachão</option>
-              <option value="mata-mata">Mata-Mata</option>
-              <option value="grupos-mata-mata">Grupos + Mata-Mata</option>
+              <option value="grupos-mata-mata">
+                Fase de Grupos + Mata-Mata
+              </option>
+              <option value="mata-mata">Somente Mata-Mata</option>
               <option value="pontos-corridos">Pontos Corridos</option>
             </select>
           </div>
           {isAnyFilterActive && (
-            <div className="mt-4 flex justify-end">
+            <div className="flex justify-end">
               <button
-                onClick={handleClearFilters}
-                className="text-sm text-gray-400 hover:text-white font-semibold flex items-center gap-1 bg-[var(--bg-color2)] px-3 py-2 rounded-md"
+                onClick={clearFilters}
+                className="text-sm text-[var(--primary-color)] hover:underline flex items-center gap-1"
               >
-                <X size={16} />
-                Limpar Filtros
+                <X size={16} /> Limpar Filtros
               </button>
             </div>
           )}
         </div>
 
         <h2 className="font-semibold text-2xl mb-4 text-white">
-          Campeonatos Abertos
+          Campeonatos Disponíveis
         </h2>
 
         {loading ? (
@@ -191,63 +161,67 @@ const CourtsPage = () => {
         ) : filteredChampionships.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {filteredChampionships.map((champ) => {
-              const { day, month } = formatDate(champ.date);
+              const address = champ.street
+                ? `${champ.street}, ${champ.number}, ${champ.cep}, ${champ.city}`
+                : 'Endereço não informado';
+              const formattedDate = champ.date
+                ? format(new Date(champ.date + 'T00:00:00'), 'dd MMM', {
+                    locale: ptBR,
+                  })
+                : 'A definir';
               return (
-                <div
+                <button
                   key={champ.id}
-                  className="bg-[var(--bg-color2)] p-4 rounded-lg shadow-md flex items-center space-x-4 hover:shadow-lg hover:border-[var(--primary-color)] border border-transparent transition-all cursor-pointer"
+                  onClick={() => setSelectedChampionship(champ)}
+                  className="bg-[var(--bg-color2)] p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 text-left hover:shadow-lg hover:border-[var(--primary-color)] border border-transparent transition-all"
                 >
-                  <div className="text-center bg-[var(--primary-color)] text-white rounded-lg p-3 w-20 flex-shrink-0">
-                    <p className="font-bold text-2xl">{day}</p>
-                    <p className="text-xs font-semibold">{month}</p>
+                  <div className="text-center bg-[var(--primary-color)] text-white rounded-lg p-3 w-full sm:w-auto">
+                    <p className="font-bold text-xl">
+                      {formattedDate.split(' ')[0]}
+                    </p>
+                    <p className="text-xs font-semibold uppercase">
+                      {formattedDate.split(' ')[1]}
+                    </p>
                   </div>
-                  <div className="flex-grow overflow-hidden">
-                    <h3 className="font-bold text-lg text-gray-200 truncate">
+                  <div className="flex-grow">
+                    <h3 className="font-bold text-lg text-white">
                       {champ.name}
                     </h3>
-                    <p className="text-sm text-gray-400 truncate">
+                    <p className="text-xs text-gray-500 mb-1">
                       Organizado por: {champ.organizerName}
                     </p>
-                    <p className="text-sm text-gray-400 truncate">
-                      {champ.street
-                        ? `${champ.street}, ${champ.number || 's/n'}, ${
-                            champ.cep
-                          } - ${champ.city}`
-                        : 'Endereço não informado'}
+                    <p className="text-sm text-gray-400">{address}</p>
+                    <p className="text-sm text-gray-400 font-semibold">
+                      {champ.time}
                     </p>
-                    <div className="flex items-center text-xs mt-2 space-x-3 flex-wrap gap-y-1">
-                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300">
-                        {champ.format}
+                    <div className="flex items-center text-xs mt-2 space-x-3 flex-wrap gap-2">
+                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 capitalize">
+                        {champ.modality}
                       </span>
-                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300">
+                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 capitalize">
+                        {champ.format.replace('-', ' ')}
+                      </span>
+                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 font-bold">
                         {champ.participants.length}/{champ.maxCapacity} vagas
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full ${
+                        className={`capitalize px-2 py-1 rounded-full ${
                           champ.access === 'publico'
                             ? 'bg-green-800/50 text-green-300'
                             : 'bg-red-800/50 text-red-300'
                         }`}
                       >
-                        {champ.access === 'publico' ? 'Público' : 'Privado'}
+                        {champ.access}
                       </span>
-                      {champ.time && (
-                        <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 flex items-center gap-1">
-                          <Clock size={12} /> {champ.time}
-                        </span>
-                      )}
                     </div>
                   </div>
-                  <ArrowRight
-                    className="text-gray-400 flex-shrink-0"
-                    size={20}
-                  />
-                </div>
+                </button>
               );
             })}
           </div>
         ) : (
           <div className="text-center py-12 bg-[var(--bg-color2)] rounded-lg">
+            <Filter size={48} className="mx-auto text-gray-500 mb-4" />
             <p className="text-gray-400">
               Nenhum campeonato encontrado com os filtros selecionados.
             </p>
@@ -255,8 +229,14 @@ const CourtsPage = () => {
         )}
       </div>
 
-      {isModalOpen && (
-        <CreateChampionshipModal onClose={() => setIsModalOpen(false)} />
+      {isCreateModalOpen && (
+        <CreateChampionshipModal onClose={() => setCreateModalOpen(false)} />
+      )}
+      {selectedChampionship && (
+        <SubscriptionModal
+          championship={selectedChampionship}
+          onClose={() => setSelectedChampionship(null)}
+        />
       )}
     </>
   );
