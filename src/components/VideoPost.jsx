@@ -1,21 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
-import { Heart, MessageCircle, Send, VolumeX, Volume2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, VolumeX, Volume2, Trophy } from 'lucide-react';
+import { motion } from 'framer-motion'; // 1. Importe o 'motion'
 
 const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(videoData.isInitiallyLiked);
   const [likes, setLikes] = useState(videoData.likes);
   const [isMuted, setIsMuted] = useState(() => window.isFintaVideoMuted ?? true);
   const [showVolumeIcon, setShowVolumeIcon] = useState(false);
   const videoRef = useRef(null);
-
-  // --- CORREÇÃO PRINCIPAL: Abordagem baseada em estado ---
   const [shouldPlay, setShouldPlay] = useState(false);
 
-  // Este useEffect observa o vídeo e apenas atualiza o estado 'shouldPlay'
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -41,7 +41,6 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
     };
   }, [videoData.id, videoData.user.name, onVideoInView]);
 
-  // Este useEffect reage ao estado 'shouldPlay' para controlar o vídeo
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
@@ -51,7 +50,6 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       const playPromise = videoElement.play();
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          // Ignora o erro normal de abortar o play com scroll rápido
           if (error.name !== 'AbortError') {
             console.error("Erro ao tentar tocar o vídeo:", error);
           }
@@ -60,9 +58,8 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
     } else {
       videoElement.pause();
     }
-  }, [shouldPlay]); // Depende apenas do estado 'shouldPlay'
+  }, [shouldPlay]);
 
-  // O restante das funções permanece igual
   const handleLike = async (e) => {
     e.stopPropagation();
     if (!currentUser) return;
@@ -97,11 +94,17 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
     onCommentClick(videoData.id, videoData.user.name);
   };
 
+  const handleChampionshipClick = (e) => {
+    e.stopPropagation();
+    if (videoData.championshipId) {
+      navigate('/courts', { state: { filterById: videoData.championshipId } });
+    }
+  };
+
   const toggleMute = (e) => {
     if (e.target.closest('.action-button')) {
       return;
     }
-
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
     window.isFintaVideoMuted = newMutedState;
@@ -126,11 +129,7 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       {showVolumeIcon && (
         <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
           <div className="bg-black/50 p-4 rounded-full">
-            {isMuted ? (
-              <VolumeX size={28} className="text-white" />
-            ) : (
-              <Volume2 size={28} className="text-white" />
-            )}
+            {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
           </div>
         </div>
       )}
@@ -170,6 +169,25 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
         <button className="flex flex-col items-center action-button">
           <Send size={32} />
         </button>
+
+        {videoData.championshipId && (
+            // 2. Transforme o botão em um 'motion.button' e adicione a animação
+            <motion.button 
+                onClick={handleChampionshipClick}
+                className="flex flex-col items-center action-button"
+                animate={{
+                    scale: [1, 1.1, 1, 1.1, 1], // Efeito de pulso
+                    transition: {
+                        duration: 2,
+                        repeat: Infinity, // Repete a animação infinitamente
+                        ease: "easeInOut",
+                        delay: 1 // Começa a animação 1s depois que o vídeo aparece
+                    }
+                }}
+            >
+                <Trophy size={32} className="text-yellow-400"/>
+            </motion.button>
+        )}
       </div>
     </div>
   );

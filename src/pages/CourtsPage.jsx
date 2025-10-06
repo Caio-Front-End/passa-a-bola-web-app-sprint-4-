@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { format } from 'date-fns';
@@ -20,6 +21,17 @@ const CourtsPage = () => {
     searchTerm: '',
   });
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const preFilteredId = location.state?.filterById;
+    if (preFilteredId) {
+      setFilters(prev => ({ ...prev, searchTerm: preFilteredId }));
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
   useEffect(() => {
     setLoading(true);
     const championshipsCollectionRef = collection(db, 'championships');
@@ -29,7 +41,6 @@ const CourtsPage = () => {
         id: doc.id,
         ...doc.data(),
       }));
-      // Ordena os campeonatos pela data do evento (campo 'date')
       champsData.sort((a, b) => new Date(a.date) - new Date(b.date));
       setChampionships(champsData);
       setLoading(false);
@@ -84,7 +95,6 @@ const CourtsPage = () => {
           </button>
         </div>
 
-        {/* Seção de Filtros */}
         <div className="bg-[var(--bg-color2)] p-4 rounded-lg mb-8 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">

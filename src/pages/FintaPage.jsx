@@ -69,6 +69,9 @@ const FintaPage = () => {
             likes: video.likes || 0,
             comments: video.comments || 0,
             isInitiallyLiked: isLikedByUser,
+            // --- CORREÇÃO AQUI ---
+            // Faltava incluir o championshipId nos dados formatados
+            championshipId: video.championshipId || null,
           };
         });
         setVideos(formattedData);
@@ -104,7 +107,6 @@ const FintaPage = () => {
   }
 
   return (
-    // --- ALTERAÇÃO AQUI: De 'p-4' para 'md:p-4' ---
     <div className="h-full w-full bg-black flex justify-center items-center relative md:p-4">
       <button
         onClick={() => setUploadModalOpen(true)}
