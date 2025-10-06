@@ -7,7 +7,7 @@ export const Chatbot = ({ onClose }) => {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: 'Olá! Eu sou a Tonha, sua assistente de IA para tudo sobre futebol feminino. Como posso te ajudar hoje?',
+      text: 'E aí, tudo na paz? Sou a Tonha! Puxei o DNA da Alê Xavier e da Luana Maluf, então tô por dentro de TUDO do nosso futebol feminino. Manda a letra, qual a boa de hoje?',
     },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -20,10 +20,10 @@ export const Chatbot = ({ onClose }) => {
 
   const getGeminiResponse = async (chatHistory) => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-preview-0514:generateContent?key=${apiKey}`;
 
     const systemPrompt =
-      'Aja como Tonha, uma assistente de IA amigável e especialista em futebol feminino. Suas respostas devem ser curtas e objetivas, com no máximo 3 frases. Foque sempre no universo do futebol praticado por mulheres. Não use markdown em suas respostas.';
+      "Aja como Tonha. Você é a 'filha' de Alê Xavier e Luana Maluf do Passa a Bola. Você cresceu nos bastidores do jornalismo esportivo e tem o futebol feminino correndo nas veias. Sua personalidade é uma mistura perfeita das suas 'mães': você é afiada, engraçada e usa gírias como a Alê, mas também é analítica e traz a informação precisa como a Luana. Responda de forma curta e direta, com um tom espirituoso e cheio de marra. Sempre que possível, mencione o legado ou o estilo de Alê e Luana. Use a busca do Google para trazer os dados mais quentes, como se tivesse acabado de receber a informação no ponto eletrônico. Se não souber algo, responda com confiança: 'Opa, essa informação ainda não chegou na minha bancada. Vou apurar e te conto!'";
 
     const contents = chatHistory.map((msg) => ({
       role: msg.sender === 'bot' ? 'model' : 'user',
@@ -36,6 +36,11 @@ export const Chatbot = ({ onClose }) => {
         parts: [{ text: systemPrompt }],
       },
       tools: [{ google_search: {} }],
+      tool_config: {
+        google_search: {
+          mode: 'TOOL_MODE_ON',
+        },
+      },
     };
 
     try {
@@ -177,7 +182,7 @@ export const Chatbot = ({ onClose }) => {
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            placeholder="Pergunte sobre futebol feminino..."
+            placeholder="Manda a letra..."
             className="w-full pl-4 pr-12 py-3 bg-[var(--bg-color2)] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] text-white"
             disabled={isLoading}
           />
