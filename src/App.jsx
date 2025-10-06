@@ -30,6 +30,8 @@ function App() {
           <Route path="/finta" element={<FintaPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/minha-conta" element={<ProfilePage />} />
+          {/* --- NOVA ROTA ADICIONADA --- */}
+          <Route path="/profile/:userId" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>
