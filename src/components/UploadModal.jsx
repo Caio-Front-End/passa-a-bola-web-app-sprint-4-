@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { storage, db } from '../firebase'; // Importar do nosso firebase.js
+import { storage, db } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { X, UploadCloud } from 'lucide-react';
+import { X, UploadCloud, Trophy } from 'lucide-react'; // Importe o ícone Trophy
 
 const UploadModal = ({ onClose }) => {
   const { currentUser } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState('');
+  const [championshipId, setChampionshipId] = useState(''); // Estado para o ID do campeonato
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -23,21 +24,19 @@ const UploadModal = ({ onClose }) => {
     }
     setUploading(true);
     try {
-      // 1. Criar referência e fazer upload para o Firebase Storage
       const fileName = `${currentUser.uid}_${Date.now()}`;
       const storageRef = ref(storage, `videos/${currentUser.uid}/${fileName}`);
       await uploadBytes(storageRef, file);
-
-      // 2. Obter a URL de download do vídeo
       const videoUrl = await getDownloadURL(storageRef);
 
-      // 3. Salvar as informações do vídeo no Firestore
+      // Adiciona o championshipId (se houver) ao documento do Firestore
       await addDoc(collection(db, 'videos'), {
         uid: currentUser.uid,
         userName: currentUser.displayName,
-        avatarUrl: currentUser.photoURL || null, // Salva a URL da foto atual ou nulo
+        avatarUrl: currentUser.photoURL || null,
         videoUrl: videoUrl,
         caption: caption,
+        championshipId: championshipId.trim(), // Adiciona o novo campo
         likes: 0,
         comments: 0,
         createdAt: serverTimestamp(),
@@ -45,7 +44,7 @@ const UploadModal = ({ onClose }) => {
 
       alert('Vídeo postado com sucesso!');
       onClose();
-      window.location.reload(); // Recarrega a página para atualizar as listas
+      window.location.reload();
     } catch (error) {
       console.error('Erro no upload: ', error);
       alert('Falha ao enviar o vídeo.');
@@ -77,7 +76,7 @@ const UploadModal = ({ onClose }) => {
               disabled={uploading}
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label htmlFor="caption" className="block text-sm font-medium mb-2">
               Legenda
             </label>
@@ -91,6 +90,22 @@ const UploadModal = ({ onClose }) => {
               disabled={uploading}
             ></textarea>
           </div>
+
+          <div className="mb-6">
+            <label htmlFor="championshipId" className="flex items-center gap-2 text-sm font-medium mb-2">
+                <Trophy size={16}/> Anexar Campeonato (Opcional)
+            </label>
+            <input
+              id="championshipId"
+              type="text"
+              value={championshipId}
+              onChange={(e) => setChampionshipId(e.target.value)}
+              className="w-full bg-gray-700 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+              placeholder="Cole o ID do campeonato aqui"
+              disabled={uploading}
+            />
+          </div>
+
           <button
             type="submit"
             className="w-full bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] font-bold py-3 px-4 rounded-lg flex justify-center items-center gap-2 disabled:opacity-50"

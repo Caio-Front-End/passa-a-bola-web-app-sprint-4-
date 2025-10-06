@@ -28,14 +28,9 @@ const Layout = () => {
   const navigate = useNavigate();
   const outlet = useOutlet();
   const { direction } = location.state || {};
-
-  // currentUser não é mais checado por userType.
   const { currentUser } = useAuth();
-
   const isFintaPage = location.pathname === '/finta';
   const isTonhaPage = location.pathname === '/chatbot';
-
-  // Rotas FIXAS para a Jogadora/Atleta
   const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const handlers = useSwipeable({
@@ -60,10 +55,11 @@ const Layout = () => {
   });
 
   return (
-    <div className="w-full h-screen bg-[var(--bg-color)] flex font-sans">
+    // --- CORREÇÃO AQUI: Trocado 'h-screen' por 'h-dvh' ---
+    <div className="w-full h-dvh bg-[var(--bg-color)] flex font-sans">
       {!isFintaPage && <MobileHeader />}
       {isFintaPage && <BackButton />}
-      <SideNavBar /> {/* Chamada direta */}
+      <SideNavBar />
       <div className="flex-1 flex flex-col overflow-hidden" {...handlers}>
         <main
           className={`

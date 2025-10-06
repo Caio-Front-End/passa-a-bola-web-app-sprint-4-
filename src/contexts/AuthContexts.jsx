@@ -25,8 +25,11 @@ export const AuthProvider = ({ children }) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
+          // Combina dados da autenticação com os dados do Firestore
           setCurrentUser({ ...user, ...userDocSnap.data() });
         } else {
+          // Se o documento do usuário não existir, usa apenas os dados da autenticação.
+          // Isso é importante para a condição de corrida ser resolvida na função register.
           setCurrentUser(user);
         }
       } else {
@@ -41,8 +44,6 @@ export const AuthProvider = ({ children }) => {
     setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-
-      // Lógica de redirecionamento simplificada: Todos vão para o Hub '/'
       setTimeout(() => {
         navigate('/');
         setIsLoggingIn(false);
@@ -67,7 +68,6 @@ export const AuthProvider = ({ children }) => {
       photoURL: '',
     });
 
-    // Garante que o userType está definido como 'jogadora' no Firestore
     const finalProfileData = {
       name,
       email,
@@ -76,7 +76,12 @@ export const AuthProvider = ({ children }) => {
       userType: 'jogadora',
     };
 
+    // Salva o documento no Firestore
     await setDoc(doc(db, 'users', user.uid), finalProfileData);
+
+    // **A CORREÇÃO DEFINITIVA:** Atualizamos o estado `currentUser` localmente e IMEDIATAMENTE
+    // com todos os dados que acabamos de salvar. Isso evita a condição de corrida.
+    setCurrentUser({ ...user, ...finalProfileData });
 
     return userCredential;
   };
