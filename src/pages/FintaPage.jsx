@@ -104,24 +104,20 @@ const FintaPage = () => {
   }
 
   return (
-    <div className="h-full w-full bg-black flex justify-center items-center relative overflow-hidden p-4">
-      <motion.button
+    // --- ALTERAÇÃO AQUI: De 'p-4' para 'md:p-4' ---
+    <div className="h-full w-full bg-black flex justify-center items-center relative md:p-4">
+      <button
         onClick={() => setUploadModalOpen(true)}
-        className="absolute top-5 md:top-9 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
+        className="absolute top-5 right-5 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
         aria-label="Postar vídeo"
-        animate={{
-          right: activeCommentSection.videoId ? 'calc(40% + 1.25rem)' : '1.25rem'
-        }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-      />
+      >
+        <Plus size={28} strokeWidth={2.5} />
+      </button>
 
-      <div className="flex justify-center h-full w-full md:max-w-4xl">
+      <div className="flex justify-center h-full w-full md:max-w-4xl relative">
         <div className="h-full w-full md:w-auto md:flex-shrink-0">
-          <motion.div
-            // --- ALTERAÇÃO AQUI: De 'md:max-w-sm' para 'md:max-w-md' ---
+          <div
             className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-md mx-auto"
-            animate={{ width: activeCommentSection.videoId ? '100%' : '100%' }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             <div className="h-full w-full overflow-y-auto snap-y snap-mandatory">
               {videos.map((video) => (
@@ -133,7 +129,7 @@ const FintaPage = () => {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <AnimatePresence>
