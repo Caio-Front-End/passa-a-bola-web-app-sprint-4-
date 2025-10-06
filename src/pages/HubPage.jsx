@@ -47,59 +47,64 @@ const HubPage = () => {
   const [nextGame, setNextGame] = useState(null);
   const [selectedGameForModal, setSelectedGameForModal] = useState(null);
 
+  // --- CORREÇÃO ESTÁ AQUI ---
   useEffect(() => {
-    if (!currentUser) return;
+    // Se o usuário não estiver logado, não faça nada e retorne uma função vazia de limpeza.
+    if (!currentUser) {
+      setLoadingChampionships(false);
+      return () => {};
+    }
 
     setLoadingChampionships(true);
     const championshipsRef = collection(db, 'championships');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Listener para campeonatos CRIADOS
     const createdQuery = query(
       championshipsRef,
-      where('organizerUid', '==', currentUser.uid),
+      where('organizerUid', '==', currentUser.uid)
     );
-    const unsubscribeCreated = onSnapshot(createdQuery, (createdSnapshot) => {
-      const createdChamps = createdSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const unsubscribeCreated = onSnapshot(createdQuery, (snapshot) => {
+      const createdChamps = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setCreatedChampionships(createdChamps);
-
-      const participatingQuery = query(
-        championshipsRef,
-        where('participants', 'array-contains-any', [
-          {
-            uid: currentUser.uid,
-            name: currentUser.displayName || currentUser.name,
-          },
-        ]),
-      );
-
-      const unsubscribeParticipating = onSnapshot(
-        participatingQuery,
-        (participatingSnapshot) => {
-          const participatingChamps = participatingSnapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() }))
-            .filter((champ) => champ.organizerUid !== currentUser.uid);
-          setParticipatingChampionships(participatingChamps);
-
-          const allUserChamps = [...createdChamps, ...participatingChamps];
-          const futureGames = allUserChamps
-            .filter((champ) => champ.date && parseISO(champ.date) >= today)
-            .sort((a, b) => parseISO(a.date) - parseISO(b.date));
-
-          setUpcomingGames(futureGames);
-          setNextGame(futureGames.length > 0 ? futureGames[0] : null);
-          setLoadingChampionships(false);
-        },
-      );
-
-      return () => unsubscribeParticipating();
+      updateGames(createdChamps, participatingChampionships);
     });
 
-    return () => unsubscribeCreated();
-  }, [currentUser]);
+    // Listener para campeonatos PARTICIPANDO
+    const participatingQuery = query(
+      championshipsRef,
+      where('participants', 'array-contains', { // 'array-contains' é mais eficiente aqui
+        uid: currentUser.uid,
+        name: currentUser.displayName || currentUser.name,
+      })
+    );
+    const unsubscribeParticipating = onSnapshot(participatingQuery, (snapshot) => {
+      const participatingChamps = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((champ) => champ.organizerUid !== currentUser.uid);
+      setParticipatingChampionships(participatingChamps);
+      updateGames(createdChampionships, participatingChamps);
+    });
+
+    // Função auxiliar para atualizar jogos futuros
+    const updateGames = (created, participating) => {
+      const allUserChamps = [...created, ...participating];
+      const futureGames = allUserChamps
+        .filter((champ) => champ.date && parseISO(champ.date) >= today)
+        .sort((a, b) => parseISO(a.date) - parseISO(b.date));
+
+      setUpcomingGames(futureGames);
+      setNextGame(futureGames.length > 0 ? futureGames[0] : null);
+      setLoadingChampionships(false);
+    };
+    
+    // Função de limpeza: será chamada quando o usuário sair da conta.
+    return () => {
+      unsubscribeCreated();
+      unsubscribeParticipating();
+    };
+  }, [currentUser]); // A dependência do currentUser é crucial
 
   const handleLeaveChampionship = async (championship) => {
     const championshipRef = doc(db, 'championships', championship.id);
@@ -198,7 +203,7 @@ const HubPage = () => {
     setSelectedGameForModal(null);
   };
 
-  if (!currentUser) {
+  if (!currentUser && !loadingChampionships) { // Condição ligeiramente ajustada para clareza
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-screen">
         Carregando dados...
@@ -255,7 +260,7 @@ const HubPage = () => {
         <header className="mb-6">
           <p className="text-md text-gray-400">Bem-vinda de volta,</p>
           <h1 className="text-3xl font-bold text-white">
-            {currentUser.displayName}
+            {currentUser?.displayName}
           </h1>
         </header>
 

@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { House, MapTrifold, FilmStrip, UserCircle } from 'phosphor-react';
+// --- ALTERAÇÃO AQUI ---
+import { House, Trophy, FilmStrip, UserCircle } from 'phosphor-react'; // Trocado MapTrifold por Trophy
 import { Bot } from 'lucide-react';
 
 const BottomNavBar = () => {
   const { currentUser } = useAuth();
   const menuRef = useRef(null);
-
-  // Hooks para navegação e localização
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Rotas dinâmicas para a lógica da animação
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta']; // Rotas fixas para a Jogadora
+  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
   const chatbotItem = {
     path: '/chatbot',
@@ -22,7 +19,7 @@ const BottomNavBar = () => {
     label: 'Tonha',
   };
 
-  // Itens de navegação para a Jogadora (os 4 em volta do botão central)
+  // --- ALTERAÇÃO AQUI ---
   const navItemsToRender = [
     {
       path: '/',
@@ -32,9 +29,9 @@ const BottomNavBar = () => {
     },
     {
       path: '/courts',
-      icon: <MapTrifold size={28} />,
-      activeIcon: <MapTrifold size={28} weight="fill" />,
-      label: 'Quadras',
+      icon: <Trophy size={28} />, // Ícone alterado
+      activeIcon: <Trophy size={28} weight="fill" />, // Ícone alterado
+      label: 'Campeonatos', // Nome alterado
     },
     {
       path: '/finta',
@@ -50,7 +47,6 @@ const BottomNavBar = () => {
     },
   ];
 
-  // Função de navegação inteligente
   const handleNavigate = (destinationPath) => {
     const currentIndex = routes.indexOf(location.pathname);
     const destinationIndex = routes.indexOf(destinationPath);
@@ -60,8 +56,6 @@ const BottomNavBar = () => {
       destinationIndex === -1 ||
       currentIndex === destinationIndex
     ) {
-      // Apenas navega se não souber a rota atual ou se for para uma rota não listada
-      // ou se for a mesma rota
       navigate(destinationPath);
       return;
     }
@@ -88,7 +82,6 @@ const BottomNavBar = () => {
     >
       <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
         <div className="flex justify-around items-center w-full h-full px-2">
-          {/* Pega os 2 primeiros itens (Hub e Quadras) */}
           {navItemsToRender.slice(0, 2).map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -111,7 +104,6 @@ const BottomNavBar = () => {
 
           <div className="w-10 flex-shrink-0"></div>
 
-          {/* Pega o 3º e 4º itens (Finta e Perfil) */}
           {navItemsToRender.slice(2, 4).map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -133,7 +125,6 @@ const BottomNavBar = () => {
           })}
         </div>
 
-        {/* Botão central do Chatbot */}
         <button
           onClick={() => handleNavigate(chatbotItem.path)}
           className={`absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
