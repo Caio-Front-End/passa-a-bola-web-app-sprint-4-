@@ -14,19 +14,13 @@ const FintaPage = () => {
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
   const [activeCommentSection, setActiveCommentSection] = useState({ videoId: null, author: '' });
   const { currentUser } = useAuth();
-  
-  // 1. Novo estado para rastrear o vídeo visível
   const [visibleVideoInfo, setVisibleVideoInfo] = useState({ id: null, author: '' });
 
-  // 2. useEffect para sincronizar o painel de comentários com o vídeo visível
   useEffect(() => {
-    // Se o painel de comentários estiver aberto E o vídeo visível mudou...
     if (activeCommentSection.videoId && visibleVideoInfo.id && activeCommentSection.videoId !== visibleVideoInfo.id) {
-      // ...atualize o painel com as informações do novo vídeo.
       setActiveCommentSection({ videoId: visibleVideoInfo.id, author: visibleVideoInfo.author });
     }
   }, [visibleVideoInfo, activeCommentSection.videoId]);
-
 
   useEffect(() => {
     const fetchVideosAndUsers = async () => {
@@ -47,7 +41,6 @@ const FintaPage = () => {
         }
 
         const userIds = [...new Set(videosList.map((v) => v.uid).filter(Boolean))];
-
         let usersMap = {};
         if (userIds.length > 0) {
           const usersCollectionRef = collection(db, 'users');
@@ -66,7 +59,6 @@ const FintaPage = () => {
             userProfile?.photoURL ||
             video.avatarUrl ||
             `https://placehold.co/40x40/b554b5/FFFFFF?text=${initial}`;
-            
           const isLikedByUser = video.likedBy?.includes(currentUser.uid) || false;
 
           return {
@@ -79,7 +71,6 @@ const FintaPage = () => {
             isInitiallyLiked: isLikedByUser,
           };
         });
-
         setVideos(formattedData);
       } catch (error) {
         console.error('Erro ao buscar vídeos do Firestore:', error);
@@ -88,7 +79,7 @@ const FintaPage = () => {
     };
 
     if (currentUser) {
-        fetchVideosAndUsers();
+      fetchVideosAndUsers();
     }
   }, [currentUser]);
 
@@ -99,8 +90,7 @@ const FintaPage = () => {
   const handleCloseComments = () => {
     setActiveCommentSection({ videoId: null, author: '' });
   };
-  
-  // 3. Função para ser chamada pelo VideoPost
+
   const handleVideoInView = (id, author) => {
     setVisibleVideoInfo({ id, author });
   };
@@ -114,66 +104,47 @@ const FintaPage = () => {
   }
 
   return (
-    <div className="h-full w-full bg-black flex justify-center relative overflow-hidden">
+    <div className="h-full w-full bg-black flex justify-center items-center relative overflow-hidden p-4">
       <motion.button
         onClick={() => setUploadModalOpen(true)}
-        className="absolute top-5 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
+        className="absolute top-5 md:top-9 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
         aria-label="Postar vídeo"
         animate={{
           right: activeCommentSection.videoId ? 'calc(40% + 1.25rem)' : '1.25rem'
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-      >
-        <Plus size={28} strokeWidth={2.5} />
-      </motion.button>
+      />
 
-      <div
-        className={`h-full bg-neutral-900 transition-all duration-300 ease-in-out ${activeCommentSection.videoId ? 'md:w-[60%]' : 'w-full'}`}
-      >
-        <div className="h-full w-full md:max-w-md mx-auto overflow-y-auto snap-y snap-mandatory">
-          {videos.map((video) => (
-            <VideoPost 
-              key={video.id} 
-              videoData={video} 
-              onCommentClick={handleOpenComments}
-              onVideoInView={handleVideoInView} // 4. Passe a nova função como prop
-            />
-          ))}
+      <div className="flex justify-center h-full w-full md:max-w-4xl">
+        <div className="h-full w-full md:w-auto md:flex-shrink-0">
+          <motion.div
+            // --- ALTERAÇÃO AQUI: De 'md:max-w-sm' para 'md:max-w-md' ---
+            className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-md mx-auto"
+            animate={{ width: activeCommentSection.videoId ? '100%' : '100%' }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <div className="h-full w-full overflow-y-auto snap-y snap-mandatory">
+              {videos.map((video) => (
+                <VideoPost
+                  key={video.id}
+                  videoData={video}
+                  onCommentClick={handleOpenComments}
+                  onVideoInView={handleVideoInView}
+                />
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </div>
-      
-      {/* O resto do JSX continua igual */}
-      <AnimatePresence>
-        {activeCommentSection.videoId && (
-          <>
-            <motion.div
-              className="hidden md:block h-full w-[40%]"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-            >
-              <CommentSection 
-                videoId={activeCommentSection.videoId} 
-                videoAuthor={activeCommentSection.author}
-                onClose={handleCloseComments} 
-              />
-            </motion.div>
 
-            <div className="md:hidden fixed inset-0 z-30">
+        <AnimatePresence>
+          {activeCommentSection.videoId && (
+            <>
               <motion.div
-                className="absolute inset-0 bg-black/50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={handleCloseComments}
-              />
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 h-[60%]"
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+                className="hidden md:block h-full w-[40%]"
+                initial={{ x: '100%', opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: '100%', opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
               >
                 <CommentSection
                   videoId={activeCommentSection.videoId}
@@ -181,11 +152,33 @@ const FintaPage = () => {
                   onClose={handleCloseComments}
                 />
               </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
-      
+              <div className="md:hidden fixed inset-0 z-30">
+                <motion.div
+                  className="absolute inset-0 bg-black/50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={handleCloseComments}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-[60%]"
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+                >
+                  <CommentSection
+                    videoId={activeCommentSection.videoId}
+                    videoAuthor={activeCommentSection.author}
+                    onClose={handleCloseComments}
+                  />
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+
       {isUploadModalOpen && (
         <UploadModal onClose={() => setUploadModalOpen(false)} />
       )}
