@@ -1,25 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-// --- ALTERAÇÃO AQUI ---
-import { House, Trophy, FilmStrip, UserCircle } from 'phosphor-react'; // Trocado MapTrifold por Trophy
+import { House, Trophy, FilmStrip, UserCircle } from 'phosphor-react';
 import { Bot } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BottomNavBar = () => {
+const BottomNavBar = ({ onChatbotOpen, isChatbotOpen }) => {
   const { currentUser } = useAuth();
   const menuRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
 
-  const chatbotItem = {
-    path: '/chatbot',
-    icon: <Bot size={32} strokeWidth={1.5} />,
-    activeIcon: <Bot size={32} strokeWidth={2.5} />,
-    label: 'Tonha',
-  };
-
-  // --- ALTERAÇÃO AQUI ---
   const navItemsToRender = [
     {
       path: '/',
@@ -29,9 +20,9 @@ const BottomNavBar = () => {
     },
     {
       path: '/courts',
-      icon: <Trophy size={28} />, // Ícone alterado
-      activeIcon: <Trophy size={28} weight="fill" />, // Ícone alterado
-      label: 'Campeonatos', // Nome alterado
+      icon: <Trophy size={28} />,
+      activeIcon: <Trophy size={28} weight="fill" />,
+      label: 'Campeonatos',
     },
     {
       path: '/finta',
@@ -46,23 +37,6 @@ const BottomNavBar = () => {
       label: 'Perfil',
     },
   ];
-
-  const handleNavigate = (destinationPath) => {
-    const currentIndex = routes.indexOf(location.pathname);
-    const destinationIndex = routes.indexOf(destinationPath);
-
-    if (
-      currentIndex === -1 ||
-      destinationIndex === -1 ||
-      currentIndex === destinationIndex
-    ) {
-      navigate(destinationPath);
-      return;
-    }
-
-    const direction = destinationIndex > currentIndex ? 'left' : 'right';
-    navigate(destinationPath, { state: { direction } });
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -81,13 +55,19 @@ const BottomNavBar = () => {
       ref={menuRef}
     >
       <div className="relative flex h-16 items-center justify-around rounded-full border-2 border-gray-200/10 bg-[var(--bg-color)]/60 backdrop-blur-md shadow-lg">
-        <div className="flex justify-around items-center w-full h-full px-2">
+        {/* O contêiner principal agora tem a transição de layout */}
+        <motion.div
+          layout
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="flex justify-around items-center w-full h-full px-2"
+        >
           {navItemsToRender.slice(0, 2).map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <button
+              <motion.button
+                layout="position"
                 key={item.label}
-                onClick={() => handleNavigate(item.path)}
+                onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
                   isActive
                     ? 'text-[var(--primary-color)]'
@@ -98,18 +78,27 @@ const BottomNavBar = () => {
                 <span className="text-[10px] mt-1 font-medium">
                   {item.label}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
 
-          <div className="w-10 flex-shrink-0"></div>
+          {/* O espaçador agora anima sua largura e opacidade diretamente */}
+          <motion.div
+            animate={{
+              width: isChatbotOpen ? 0 : '2.5rem',
+              opacity: isChatbotOpen ? 0 : 1,
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="flex-shrink-0"
+          />
 
           {navItemsToRender.slice(2, 4).map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <button
+              <motion.button
+                layout="position"
                 key={item.label}
-                onClick={() => handleNavigate(item.path)}
+                onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
                   isActive
                     ? 'text-[var(--primary-color)]'
@@ -120,23 +109,26 @@ const BottomNavBar = () => {
                 <span className="text-[10px] mt-1 font-medium">
                   {item.label}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
-        <button
-          onClick={() => handleNavigate(chatbotItem.path)}
-          className={`absolute left-1/2 -translate-x-1/2 -translate-y-[28px] h-16 w-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
-            location.pathname === chatbotItem.path
-              ? 'bg-[var(--primary-color-hover)] text-gray-300'
-              : 'bg-[var(--primary-color)] text-black'
-          }`}
-        >
-          {location.pathname === chatbotItem.path
-            ? chatbotItem.activeIcon
-            : chatbotItem.icon}
-        </button>
+        {/* Animação do botão flutuante permanece a mesma */}
+        <AnimatePresence>
+          {!isChatbotOpen && (
+            <motion.button
+              initial={{ scale: 0, y: -10 }}
+              animate={{ scale: 1, y: -28 }}
+              exit={{ scale: 0, y: -10 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              onClick={onChatbotOpen}
+              className="absolute left-1/2 -translate-x-1/2 h-16 w-16 rounded-full shadow-lg flex items-center justify-center bg-[var(--primary-color)] text-black"
+            >
+              <Bot size={32} strokeWidth={1.5} />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

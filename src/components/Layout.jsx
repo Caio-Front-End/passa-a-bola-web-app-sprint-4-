@@ -1,12 +1,15 @@
 import { Outlet, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 import SideNavBar from './SideNavbar.jsx';
 import BottomNavBar from './BottomNavbar.jsx';
 import MobileHeader from './MobileHeader.jsx';
+import Chatbot from './Chatbot.jsx';
 import BackButton from './BackButton.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { Bot } from 'lucide-react';
 
 const pageVariants = {
   enter: (direction) => ({
@@ -26,28 +29,24 @@ const pageVariants = {
 const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const outlet = useOutlet();
   const { direction } = location.state || {};
   const { currentUser } = useAuth();
   const isFintaPage = location.pathname === '/finta';
-  const isTonhaPage = location.pathname === '/chatbot';
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+  const routes = ['/', '/courts', '/finta', '/minha-conta'];
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       const currentIndex = routes.indexOf(location.pathname);
       if (currentIndex < routes.length - 1 && currentIndex !== -1) {
-        navigate(routes[currentIndex + 1], {
-          state: { direction: 'left' },
-        });
+        navigate(routes[currentIndex + 1], { state: { direction: 'left' } });
       }
     },
     onSwipedRight: () => {
       const currentIndex = routes.indexOf(location.pathname);
       if (currentIndex > 0 && currentIndex !== -1) {
-        navigate(routes[currentIndex - 1], {
-          state: { direction: 'right' },
-        });
+        navigate(routes[currentIndex - 1], { state: { direction: 'right' } });
       }
     },
     preventDefaultTouchmoveEvent: true,
@@ -55,16 +54,18 @@ const Layout = () => {
   });
 
   return (
-    // --- CORREÇÃO AQUI: Trocado 'h-screen' por 'h-dvh' ---
     <div className="w-full h-dvh bg-[var(--bg-color)] flex font-sans">
       {!isFintaPage && <MobileHeader />}
       {isFintaPage && <BackButton />}
       <SideNavBar />
-      <div className="flex-1 flex flex-col overflow-hidden" {...handlers}>
+      <div
+        className="flex-1 flex flex-col overflow-hidden relative"
+        {...handlers}
+      >
         <main
           className={`
             flex-1 overflow-y-auto w-full h-full
-            ${isFintaPage || isTonhaPage ? 'pb-0' : 'pb-25 pt-10 md:pt-0'}
+            ${isFintaPage ? 'pb-0' : 'pb-25 pt-10 md:pt-0'}
             relative
           `}
         >
@@ -86,8 +87,27 @@ const Layout = () => {
             </motion.div>
           </AnimatePresence>
         </main>
-        {!isFintaPage && <BottomNavBar />}
+        {!isFintaPage && (
+          <BottomNavBar
+            onChatbotOpen={() => setIsChatbotOpen(true)}
+            isChatbotOpen={isChatbotOpen}
+          />
+        )}
       </div>
+
+      <AnimatePresence>
+        {isChatbotOpen && <Chatbot onClose={() => setIsChatbotOpen(false)} />}
+      </AnimatePresence>
+
+      {!isChatbotOpen && (
+        <button
+          onClick={() => setIsChatbotOpen(true)}
+          className="hidden md:flex cursor-pointer fixed bottom-6 right-6 w-16 h-16 bg-[#b554b5] text-white rounded-full items-center justify-center shadow-lg hover:bg-[#d44b84] transition-transform hover:scale-110 z-40"
+          aria-label="Abrir chat"
+        >
+          <Bot size={28} />
+        </button>
+      )}
     </div>
   );
 };

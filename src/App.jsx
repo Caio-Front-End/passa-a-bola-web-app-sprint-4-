@@ -12,7 +12,6 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import HubPage from './pages/HubPage.jsx';
 import CourtsPage from './pages/CourtsPage.jsx';
 import FintaPage from './pages/FintaPage.jsx';
-import ChatbotPage from './pages/ChatbotPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 
 function App() {
@@ -28,7 +27,6 @@ function App() {
           <Route path="/" element={<HubPage />} />
           <Route path="/courts" element={<CourtsPage />} />
           <Route path="/finta" element={<FintaPage />} />
-          <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/minha-conta" element={<ProfilePage />} />
           {/* --- NOVA ROTA ADICIONADA --- */}
           <Route path="/profile/:userId" element={<ProfilePage />} />

@@ -23,12 +23,6 @@ const SideNavBar = () => {
       label: 'Campeonatos', // Nome alterado
     },
     {
-      path: '/chatbot',
-      icon: <Bot size={28} />,
-      activeIcon: <Bot size={28} weight="fill" />,
-      label: 'Tonha',
-    },
-    {
       path: '/finta',
       icon: <FilmStrip size={28} />,
       activeIcon: <FilmStrip size={28} weight="fill" />,
@@ -38,7 +32,7 @@ const SideNavBar = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const routes = ['/', '/courts', '/chatbot', '/finta', '/minha-conta'];
+  const routes = ['/', '/courts', '/finta', '/minha-conta'];
 
   const handleNavigate = (destinationPath) => {
     const currentIndex = routes.indexOf(location.pathname);
