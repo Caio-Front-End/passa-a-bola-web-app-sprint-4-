@@ -63,14 +63,16 @@ const FintaPage = () => {
 
           return {
             id: video.id,
-            user: { name, avatar },
+            user: {
+              uid: video.uid,
+              name,
+              avatar,
+            },
             videoUrl: video.videoUrl,
             caption: video.caption,
             likes: video.likes || 0,
             comments: video.comments || 0,
             isInitiallyLiked: isLikedByUser,
-            // --- CORREÇÃO AQUI ---
-            // Faltava incluir o championshipId nos dados formatados
             championshipId: video.championshipId || null,
           };
         });
@@ -107,19 +109,20 @@ const FintaPage = () => {
   }
 
   return (
-    <div className="h-full w-full bg-black flex justify-center items-center relative md:p-4">
-      <button
-        onClick={() => setUploadModalOpen(true)}
-        className="absolute top-5 right-5 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
-        aria-label="Postar vídeo"
-      >
-        <Plus size={28} strokeWidth={2.5} />
-      </button>
+    <div className="h-dvh w-full bg-black flex justify-center items-center relative md:p-4">
+      <div className="flex justify-center h-full w-full md:max-w-5xl relative">
+        <button
+          onClick={() => setUploadModalOpen(true)}
+          className="absolute top-5 right-5 z-20 bg-[var(--primary-color)]/60 text-white w-12 h-12 hover:scale-110 transition-transform duration-200 ease-in-out rounded-full backdrop-blur-md flex items-center justify-center shadow-lg hover:bg-[var(--primary-color-hover)]/60 "
+          aria-label="Postar vídeo"
+        >
+          <Plus size={28} strokeWidth={2.5} />
+        </button>
 
-      <div className="flex justify-center h-full w-full md:max-w-4xl relative">
         <div className="h-full w-full md:w-auto md:flex-shrink-0">
           <div
-            className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-md mx-auto"
+            // --- ALTERAÇÃO AQUI: De 'md:max-w-md' para 'md:max-w-lg' ---
+            className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-lg mx-auto"
           >
             <div className="h-full w-full overflow-y-auto snap-y snap-mandatory">
               {videos.map((video) => (

@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { Heart, MessageCircle, Send, VolumeX, Volume2, Trophy } from 'lucide-react';
-import { motion } from 'framer-motion'; // 1. Importe o 'motion'
+import { motion } from 'framer-motion';
 
 const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
   const { currentUser } = useAuth();
@@ -102,7 +102,7 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
   };
 
   const toggleMute = (e) => {
-    if (e.target.closest('.action-button')) {
+    if (e.target.closest('.action-button') || e.target.closest('a')) {
       return;
     }
     const newMutedState = !isMuted;
@@ -123,6 +123,7 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
         loop
         playsInline
         muted={isMuted}
+        // --- ALTERAÇÃO AQUI: De 'object-contain' de volta para 'object-cover' ---
         className="h-full w-full object-cover"
       ></video>
 
@@ -135,22 +136,19 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       )}
 
       <div className="absolute bottom-0 left-0 right-0 p-2 text-white bg-gradient-to-t from-black/60 to-transparent">
-        <div className="flex items-center mb-2">
+        <Link to={`/profile/${videoData.user.uid}`} className="flex items-center mb-2 group">
           <img
             src={videoData.user.avatar}
             alt={videoData.user.name}
-            className="w-10 h-10 rounded-full border-2 border-white"
+            className="w-10 h-10 rounded-full border-2 border-white group-hover:border-[var(--primary-color)] transition-colors"
           />
-          <p className="ml-3 font-semibold">{videoData.user.name}</p>
-        </div>
+          <p className="ml-3 font-semibold group-hover:text-[var(--primary-color)] transition-colors">{videoData.user.name}</p>
+        </Link>
         <p className="text-sm">{videoData.caption}</p>
       </div>
 
       <div className="absolute right-2 bottom-24 flex flex-col items-center space-y-4 text-white">
-        <button
-          onClick={handleLike}
-          className="flex flex-col items-center action-button"
-        >
+        <button onClick={handleLike} className="flex flex-col items-center action-button">
           <Heart
             size={32}
             className={`transition-all ${
@@ -159,29 +157,24 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
           />
           <span className="text-xs font-semibold">{likes}</span>
         </button>
-        <button
-          onClick={handleOpenComments}
-          className="flex flex-col items-center action-button"
-        >
+        <button onClick={handleOpenComments} className="flex flex-col items-center action-button">
           <MessageCircle size={32} />
           <span className="text-xs font-semibold">{videoData.comments}</span>
         </button>
         <button className="flex flex-col items-center action-button">
           <Send size={32} />
         </button>
-
         {videoData.championshipId && (
-            // 2. Transforme o botão em um 'motion.button' e adicione a animação
             <motion.button 
                 onClick={handleChampionshipClick}
                 className="flex flex-col items-center action-button"
                 animate={{
-                    scale: [1, 1.1, 1, 1.1, 1], // Efeito de pulso
+                    scale: [1, 1.1, 1, 1.1, 1],
                     transition: {
                         duration: 2,
-                        repeat: Infinity, // Repete a animação infinitamente
+                        repeat: Infinity,
                         ease: "easeInOut",
-                        delay: 1 // Começa a animação 1s depois que o vídeo aparece
+                        delay: 1
                     }
                 }}
             >

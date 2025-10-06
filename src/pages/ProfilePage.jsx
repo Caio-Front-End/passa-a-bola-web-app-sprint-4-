@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { db, storage } from '../firebase';
 import {
@@ -10,6 +11,7 @@ import {
   doc,
   orderBy,
   updateDoc,
+  getDoc,
 } from 'firebase/firestore';
 import {
   ref,
@@ -36,7 +38,6 @@ import PlayerRadarChart from '../components/PlayerRadarChart';
 import AddMatchModal from '../components/AddMatchModal';
 import { userMatches } from '../data/mockStats';
 
-// Componente auxiliar para o item do histórico
 const MatchHistoryItem = ({ partida }) => {
   const [golsCasa, golsFora] = partida.placar.split('x').map(Number);
   let resultado = 'E';
@@ -72,6 +73,10 @@ const MatchHistoryItem = ({ partida }) => {
 
 const ProfilePage = () => {
   const { currentUser, updateCurrentUser } = useAuth();
+  const { userId } = useParams();
+
+  const [profileUser, setProfileUser] = useState(null);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [myVideos, setMyVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('fintas');
@@ -79,7 +84,6 @@ const ProfilePage = () => {
   const [matches, setMatches] = useState(userMatches);
   const [isAddMatchModalOpen, setIsAddMatchModalOpen] = useState(false);
 
-  // Dados mock para o gráfico radar
   const radarData = [
     { subject: 'Ataque', A: 90, fullMark: 100 },
     { subject: 'Passe', A: 80, fullMark: 100 },
@@ -88,104 +92,82 @@ const ProfilePage = () => {
     { subject: 'Defesa', A: 40, fullMark: 100 },
   ];
 
-  // Mock de dados para o histórico de partidas
   const historicoPartidas = [
     { id: 1, placar: '2x1', campeonato: 'Liga das Campeãs', fase: 'Final' },
     { id: 2, placar: '3x3', campeonato: 'Liga das Campeãs', fase: 'Semifinal' },
-    {
-      id: 3,
-      placar: '1x0',
-      campeonato: 'Passa a Bola',
-      fase: 'Quartas de Finais',
-    },
-    {
-      id: 4,
-      placar: '1x2',
-      campeonato: 'Passa a Bola',
-      fase: 'Oitavas de Finais',
-    },
+    { id: 3, placar: '1x0', campeonato: 'Passa a Bola', fase: 'Quartas de Finais' },
+    { id: 4, placar: '1x2', campeonato: 'Passa a Bola', fase: 'Oitavas de Finais' },
   ];
 
   useEffect(() => {
-    const fetchMyVideos = async () => {
+    const fetchProfileData = async () => {
       setLoading(true);
-      // Checagem básica
-      if (!currentUser) return;
-
-      const videosCollection = collection(db, 'videos');
-      const q = query(
-        videosCollection,
-        where('uid', '==', currentUser.uid),
-        orderBy('createdAt', 'desc'),
-      );
+      const targetUserId = userId || currentUser.uid;
+      
+      setIsOwnProfile(targetUserId === currentUser.uid);
 
       try {
+        const userDocRef = doc(db, 'users', targetUserId);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          setProfileUser({ uid: userDocSnap.id, ...userDocSnap.data() });
+        } else {
+          console.error("Usuário não encontrado no Firestore!");
+          setProfileUser(null);
+        }
+
+        const videosCollection = collection(db, 'videos');
+        const q = query(
+          videosCollection,
+          where('uid', '==', targetUserId),
+          orderBy('createdAt', 'desc'),
+        );
         const querySnapshot = await getDocs(q);
         const videosList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setMyVideos(videosList);
+
       } catch (error) {
-        console.error('Erro ao buscar vídeos:', error);
+        console.error('Erro ao buscar dados do perfil:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    // Inicia a busca se o usuário existir
     if (currentUser) {
-      fetchMyVideos();
+      fetchProfileData();
     }
-  }, [currentUser]);
+  }, [userId, currentUser]);
 
   const handleSaveProfile = async (profileData, photoFile) => {
     if (!currentUser) return;
-
-    // Mantém a foto atual por padrão
     let photoURL = currentUser.photoURL;
-
     const updatedData = { ...profileData };
 
     try {
-      // Se uma nova foto foi enviada, faz o upload para o Storage
       if (photoFile) {
-        // Define um nome de arquivo único para a foto de perfil
-        // Isso garante que o caminho tenha o formato exigido
         const fileExtension = photoFile.name.split('.').pop();
         const fileName = `${currentUser.uid}-${Date.now()}.${fileExtension}`;
-
-        const storageRef = ref(
-          storage,
-          `profile-pictures/${currentUser.uid}/${fileName}`,
-        );
-
+        const storageRef = ref(storage, `profile-pictures/${currentUser.uid}/${fileName}`);
         await uploadBytes(storageRef, photoFile);
         photoURL = await getDownloadURL(storageRef);
-        // Adiciona a nova URL aos dados a serem salvos
         updatedData.photoURL = photoURL;
       }
-
-      // Atualiza o documento do usuário no Firestore
       const userDocRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userDocRef, updatedData);
-
-      // Atualiza o estado global do usuário para refletir as mudanças em todo o app
       updateCurrentUser({ ...currentUser, ...updatedData });
-
-      // Usando console.warn ou log em vez de alert
       console.log('Perfil atualizado com sucesso!');
       setIsEditModal(false);
     } catch (error) {
       console.error('Erro ao salvar o perfil:', error);
-      // alert('Falha ao salvar o perfil.'); // Evitando alert
     }
   };
 
   const handleDeleteVideo = async (video) => {
-    // Substituir window.confirm por modal customizado <<< !!!!!!!!!
-    const userConfirmed = true;
-
+    const userConfirmed = window.confirm("Tem certeza que quer excluir este vídeo?");
     if (!userConfirmed) return;
     try {
       const videoRef = ref(storage, video.videoUrl);
@@ -198,7 +180,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Adicione junto com as outras funções
   const handleAddMatch = (matchData) => {
     const newMatch = {
       id: `m${matches.length + 1}`,
@@ -213,15 +194,24 @@ const ProfilePage = () => {
     setMatches([newMatch, ...matches]);
   };
 
-  if (!currentUser) {
+  if (loading) {
     return (
-      <div className="p-8 bg-[var(--bg-color)] text-white min-h-full">
-        Carregando...
+      <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex justify-center items-center">
+        <p>Carregando perfil...</p>
       </div>
     );
   }
 
-  const displayName = currentUser.name || currentUser.displayName;
+  if (!profileUser) {
+    return (
+      <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex flex-col justify-center items-center text-center gap-4">
+        <h1 className="text-2xl font-bold">Usuário Não Encontrado</h1>
+        <p className="text-gray-400">O perfil que você está tentando acessar não existe ou foi removido.</p>
+      </div>
+    );
+  }
+
+  const displayName = profileUser.name || profileUser.displayName;
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
 
   return (
@@ -229,63 +219,58 @@ const ProfilePage = () => {
       <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
         <header className="mb-6 text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-bold text-white">
-            Meu Perfil
+            {isOwnProfile ? 'Meu Perfil' : `Perfil de ${displayName}`}
           </h1>
-          <p className="text-md text-gray-400">
-            Gerencie suas informações e conquistas
-          </p>
+          {isOwnProfile && <p className="text-md text-gray-400">Gerencie suas informações e conquistas</p>}
         </header>
 
-        {/* Card Principal do Perfil */}
         <div className="bg-[var(--bg-color2)] rounded-lg shadow-lg p-4 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="relative group flex-shrink-0">
             <img
-              src={
-                currentUser.photoURL ||
-                `https://placehold.co/128x128/b554b5/FFFFFF?text=${initial}`
-              }
+              src={profileUser.photoURL || `https://placehold.co/128x128/b554b5/FFFFFF?text=${initial}`}
               alt="Foto de perfil"
               className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-gray-600"
             />
-            <button
-              onClick={() => setIsEditModal(true)}
-              className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              <Camera size={32} className="text-white" />
-            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => setIsEditModal(true)}
+                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <Camera size={32} className="text-white" />
+              </button>
+            )}
           </div>
 
           <div className="flex-grow text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 justify-center md:justify-start">
               <h2 className="text-2xl font-bold text-white">
-                {currentUser.apelido || 'Apelido'}
+                {profileUser.apelido || 'Apelido'}
               </h2>
               <p className="text-gray-400">({displayName})</p>
             </div>
-
             <div className="mt-3 flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-2 text-sm text-gray-300">
-              {currentUser.idade && (
+              {profileUser.idade && (
                 <div className="flex items-center gap-1.5">
                   <Cake size={16} />
-                  <span>{currentUser.idade} anos</span>
+                  <span>{profileUser.idade} anos</span>
                 </div>
               )}
-              {currentUser.posicao && (
+              {profileUser.posicao && (
                 <div className="flex items-center gap-1.5">
                   <Shield size={16} />
-                  <span>{currentUser.posicao}</span>
+                  <span>{profileUser.posicao}</span>
                 </div>
               )}
-              {currentUser.timeCoracao && (
+              {profileUser.timeCoracao && (
                 <div className="flex items-center gap-1.5">
                   <Heart size={16} />
-                  <span>{currentUser.timeCoracao}</span>
+                  <span>{profileUser.timeCoracao}</span>
                 </div>
               )}
-              {currentUser.cidadeEstado && (
+              {profileUser.cidadeEstado && (
                 <div className="flex items-center gap-1.5">
                   <MapPin size={16} />
-                  <span>{currentUser.cidadeEstado}</span>
+                  <span>{profileUser.cidadeEstado}</span>
                 </div>
               )}
             </div>
@@ -296,47 +281,27 @@ const ProfilePage = () => {
               <Share2 size={18} />
               <span className="hidden sm:inline">Compartilhar</span>
             </button>
-            <button
-              onClick={() => setIsEditModal(true)}
-              className="bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Edit size={18} />
-              <span>Editar</span>
-            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => setIsEditModal(true)}
+                className="bg-[var(--primary-color)] hover:bg-[var(--primary-color-hover)] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Edit size={18} />
+                <span>Editar</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Abas */}
         <div className="mt-8">
           <div className="flex justify-center border-b border-gray-700">
-            <button
-              onClick={() => setActiveTab('fintas')}
-              className={`px-6 py-3 font-semibold transition-colors ${
-                activeTab === 'fintas'
-                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
-                  : 'text-gray-400'
-              }`}
-            >
+            <button onClick={() => setActiveTab('fintas')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'fintas' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
               <Film size={24} />
             </button>
-            <button
-              onClick={() => setActiveTab('historico')}
-              className={`px-6 py-3 font-semibold transition-colors ${
-                activeTab === 'historico'
-                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
-                  : 'text-gray-400'
-              }`}
-            >
+            <button onClick={() => setActiveTab('historico')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'historico' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
               <History size={24} />
             </button>
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`px-6 py-3 font-semibold transition-colors ${
-                activeTab === 'stats'
-                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
-                  : 'text-gray-400'
-              }`}
-            >
+            <button onClick={() => setActiveTab('stats')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'stats' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
               <Shield size={24} />
             </button>
           </div>
@@ -361,12 +326,14 @@ const ProfilePage = () => {
                           {video.caption}
                         </p>
                       </div>
-                      <button
-                        onClick={() => handleDeleteVideo(video)}
-                        className="absolute top-1.5 right-1.5 bg-red-600/70 hover:bg-red-700 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => handleDeleteVideo(video)}
+                          className="absolute top-1.5 right-1.5 bg-red-600/70 hover:bg-red-700 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -374,7 +341,7 @@ const ProfilePage = () => {
                 <div className="text-center py-12 bg-[var(--bg-color2)] rounded-lg">
                   <VideoOff size={48} className="mx-auto text-gray-500 mb-4" />
                   <p className="text-gray-400">
-                    Você ainda não postou nenhum vídeo.
+                    Nenhum vídeo postado ainda.
                   </p>
                 </div>
               ))}
@@ -391,12 +358,14 @@ const ProfilePage = () => {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold text-white">Estatísticas</h3>
-                  <button
-                    onClick={() => setIsAddMatchModalOpen(true)}
-                    className="bg-[var(--primary-color)] hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-lg"
-                  >
-                    Adicionar Partida
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => setIsAddMatchModalOpen(true)}
+                      className="bg-[var(--primary-color)] hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-lg"
+                    >
+                      Adicionar Partida
+                    </button>
+                  )}
                 </div>
 
                 <StatsDashboard matches={matches} />
@@ -413,7 +382,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {isEditModalOpen && (
+      {isOwnProfile && isEditModalOpen && (
         <EditProfileModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModal(false)}
@@ -422,11 +391,13 @@ const ProfilePage = () => {
         />
       )}
 
-      <AddMatchModal
-        isOpen={isAddMatchModalOpen}
-        onClose={() => setIsAddMatchModalOpen(false)}
-        onMatchSubmit={handleAddMatch}
-      />
+      {isOwnProfile && isAddMatchModalOpen && (
+        <AddMatchModal
+          isOpen={isAddMatchModalOpen}
+          onClose={() => setIsAddMatchModalOpen(false)}
+          onMatchSubmit={handleAddMatch}
+        />
+      )}
     </>
   );
 };
