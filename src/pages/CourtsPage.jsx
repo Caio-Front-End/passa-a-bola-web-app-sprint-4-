@@ -27,7 +27,7 @@ const CourtsPage = () => {
   useEffect(() => {
     const preFilteredId = location.state?.filterById;
     if (preFilteredId) {
-      setFilters(prev => ({ ...prev, searchTerm: preFilteredId }));
+      setFilters((prev) => ({ ...prev, searchTerm: preFilteredId }));
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
@@ -82,7 +82,7 @@ const CourtsPage = () => {
 
   return (
     <>
-      <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
+      <div className="p-4 pb-34 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
           <h1 className="text-3xl font-bold text-white">
             Central de Campeonatos
