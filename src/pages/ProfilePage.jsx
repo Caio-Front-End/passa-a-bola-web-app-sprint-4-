@@ -95,15 +95,25 @@ const ProfilePage = () => {
   const historicoPartidas = [
     { id: 1, placar: '2x1', campeonato: 'Liga das Campeãs', fase: 'Final' },
     { id: 2, placar: '3x3', campeonato: 'Liga das Campeãs', fase: 'Semifinal' },
-    { id: 3, placar: '1x0', campeonato: 'Passa a Bola', fase: 'Quartas de Finais' },
-    { id: 4, placar: '1x2', campeonato: 'Passa a Bola', fase: 'Oitavas de Finais' },
+    {
+      id: 3,
+      placar: '1x0',
+      campeonato: 'Passa a Bola',
+      fase: 'Quartas de Finais',
+    },
+    {
+      id: 4,
+      placar: '1x2',
+      campeonato: 'Passa a Bola',
+      fase: 'Oitavas de Finais',
+    },
   ];
 
   useEffect(() => {
     const fetchProfileData = async () => {
       setLoading(true);
       const targetUserId = userId || currentUser.uid;
-      
+
       setIsOwnProfile(targetUserId === currentUser.uid);
 
       try {
@@ -113,7 +123,7 @@ const ProfilePage = () => {
         if (userDocSnap.exists()) {
           setProfileUser({ uid: userDocSnap.id, ...userDocSnap.data() });
         } else {
-          console.error("Usuário não encontrado no Firestore!");
+          console.error('Usuário não encontrado no Firestore!');
           setProfileUser(null);
         }
 
@@ -129,7 +139,6 @@ const ProfilePage = () => {
           ...doc.data(),
         }));
         setMyVideos(videosList);
-
       } catch (error) {
         console.error('Erro ao buscar dados do perfil:', error);
       } finally {
@@ -151,7 +160,10 @@ const ProfilePage = () => {
       if (photoFile) {
         const fileExtension = photoFile.name.split('.').pop();
         const fileName = `${currentUser.uid}-${Date.now()}.${fileExtension}`;
-        const storageRef = ref(storage, `profile-pictures/${currentUser.uid}/${fileName}`);
+        const storageRef = ref(
+          storage,
+          `profile-pictures/${currentUser.uid}/${fileName}`,
+        );
         await uploadBytes(storageRef, photoFile);
         photoURL = await getDownloadURL(storageRef);
         updatedData.photoURL = photoURL;
@@ -167,7 +179,9 @@ const ProfilePage = () => {
   };
 
   const handleDeleteVideo = async (video) => {
-    const userConfirmed = window.confirm("Tem certeza que quer excluir este vídeo?");
+    const userConfirmed = window.confirm(
+      'Tem certeza que quer excluir este vídeo?',
+    );
     if (!userConfirmed) return;
     try {
       const videoRef = ref(storage, video.videoUrl);
@@ -206,7 +220,9 @@ const ProfilePage = () => {
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex flex-col justify-center items-center text-center gap-4">
         <h1 className="text-2xl font-bold">Usuário Não Encontrado</h1>
-        <p className="text-gray-400">O perfil que você está tentando acessar não existe ou foi removido.</p>
+        <p className="text-gray-400">
+          O perfil que você está tentando acessar não existe ou foi removido.
+        </p>
       </div>
     );
   }
@@ -216,18 +232,25 @@ const ProfilePage = () => {
 
   return (
     <>
-      <div className="p-4 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
+      <div className="p-4 pb-34 md:p-8 bg-[var(--bg-color)] text-gray-200 min-h-full">
         <header className="mb-6 text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-bold text-white">
             {isOwnProfile ? 'Meu Perfil' : `Perfil de ${displayName}`}
           </h1>
-          {isOwnProfile && <p className="text-md text-gray-400">Gerencie suas informações e conquistas</p>}
+          {isOwnProfile && (
+            <p className="text-md text-gray-400">
+              Gerencie suas informações e conquistas
+            </p>
+          )}
         </header>
 
         <div className="bg-[var(--bg-color2)] rounded-lg shadow-lg p-4 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="relative group flex-shrink-0">
             <img
-              src={profileUser.photoURL || `https://placehold.co/128x128/b554b5/FFFFFF?text=${initial}`}
+              src={
+                profileUser.photoURL ||
+                `https://placehold.co/128x128/b554b5/FFFFFF?text=${initial}`
+              }
               alt="Foto de perfil"
               className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-gray-600"
             />
@@ -295,13 +318,34 @@ const ProfilePage = () => {
 
         <div className="mt-8">
           <div className="flex justify-center border-b border-gray-700">
-            <button onClick={() => setActiveTab('fintas')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'fintas' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
+            <button
+              onClick={() => setActiveTab('fintas')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'fintas'
+                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
+                  : 'text-gray-400'
+              }`}
+            >
               <Film size={24} />
             </button>
-            <button onClick={() => setActiveTab('historico')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'historico' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
+            <button
+              onClick={() => setActiveTab('historico')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'historico'
+                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
+                  : 'text-gray-400'
+              }`}
+            >
               <History size={24} />
             </button>
-            <button onClick={() => setActiveTab('stats')} className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'stats' ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]' : 'text-gray-400'}`}>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'stats'
+                  ? 'text-[var(--primary-color)] border-b-2 border-[var(--primary-color)]'
+                  : 'text-gray-400'
+              }`}
+            >
               <Shield size={24} />
             </button>
           </div>
@@ -340,9 +384,7 @@ const ProfilePage = () => {
               ) : (
                 <div className="text-center py-12 bg-[var(--bg-color2)] rounded-lg">
                   <VideoOff size={48} className="mx-auto text-gray-500 mb-4" />
-                  <p className="text-gray-400">
-                    Nenhum vídeo postado ainda.
-                  </p>
+                  <p className="text-gray-400">Nenhum vídeo postado ainda.</p>
                 </div>
               ))}
 
