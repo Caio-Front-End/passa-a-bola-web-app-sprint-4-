@@ -1,12 +1,16 @@
+// src/components/CreateChampionshipModal.jsx
+
 import { useState } from 'react';
 import ModalWrapper from './ModalWrapper';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext'; // 1. IMPORTADO O HOOK
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, ArrowRight, CheckCircle, Copy } from 'lucide-react';
 
 const CreateChampionshipModal = ({ onClose }) => {
   const { currentUser } = useAuth();
+  const { showToast } = useToast(); // 2. INICIADO O HOOK
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -19,7 +23,7 @@ const CreateChampionshipModal = ({ onClose }) => {
     time: '',
     format: 'rachao',
     modality: 'futsal',
-    numberOfTeams: 2, // Novo campo, valor inicial 2
+    numberOfTeams: 2,
     access: 'publico',
     password: '',
     teamFormation: 'manual',
@@ -92,7 +96,7 @@ const CreateChampionshipModal = ({ onClose }) => {
 
       const newChampionshipData = {
         ...formData,
-        maxCapacity, // Salva a capacidade calculada
+        maxCapacity,
         organizerUid: currentUser.uid,
         organizerName: currentUser.displayName || currentUser.name,
         participants: [
@@ -108,7 +112,7 @@ const CreateChampionshipModal = ({ onClose }) => {
         const teams = [];
         for (let i = 0; i < formData.numberOfTeams; i++) {
           const team = {
-            name: `Time ${String.fromCharCode(65 + i)}`, // Time A, Time B, etc.
+            name: `Time ${String.fromCharCode(65 + i)}`,
             players: [],
           };
           if (i === 0) {
@@ -126,7 +130,8 @@ const CreateChampionshipModal = ({ onClose }) => {
         collection(db, 'championships'),
         newChampionshipData,
       );
-      console.log('Campeonato salvo com ID: ', docRef.id);
+
+      showToast(); // 3. CHAMADA DO TOAST NO MOMENTO DO SUCESSO
       setCreatedChampionshipId(docRef.id);
     } catch (e) {
       console.error('Erro ao adicionar documento: ', e);
@@ -155,11 +160,14 @@ const CreateChampionshipModal = ({ onClose }) => {
     if (createdChampionshipId) {
       return (
         <div className="p-6 text-center">
-          <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
+          <CheckCircle
+            size={48}
+            className="mx-auto text-[var(--primary-color)] mb-4"
+          />
           <h3 className="text-xl font-bold text-white">Campeonato Criado!</h3>
           <p className="text-gray-400 mt-2 mb-4">
-            Compartilhe o ID abaixo para que outras atletas possam encontrar seu
-            campeonato:
+            Compartilhe o ID abaixo para que outras atletas possam encontrar e
+            se inscrever:
           </p>
           <div className="bg-gray-900 rounded-lg p-3 flex flex-col items-center justify-between gap-4">
             <span className="font-mono text-lg text-gray-300">

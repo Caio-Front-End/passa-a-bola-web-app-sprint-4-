@@ -1,20 +1,22 @@
 // src/components/UploadModal.jsx
 
-import { useState, useRef } from 'react'; // Adicionado useRef
+import { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext';
 import { storage, db } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { X, UploadCloud, Trophy, Camera, Library } from 'lucide-react'; // Ícones novos
+import { X, UploadCloud, Trophy, Camera, Library } from 'lucide-react';
 
-const UploadModal = ({ onClose }) => {
+// ++ ALTERAÇÃO AQUI ++ Recebemos a nova propriedade onUploadSuccess
+const UploadModal = ({ onClose, onUploadSuccess }) => {
   const { currentUser } = useAuth();
+  const { showToast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState('');
   const [championshipId, setChampionshipId] = useState('');
 
-  // --- ALTERAÇÃO AQUI: Refs para os inputs invisíveis ---
   const recordInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
@@ -38,7 +40,8 @@ const UploadModal = ({ onClose }) => {
       await uploadBytes(storageRef, file);
       const videoUrl = await getDownloadURL(storageRef);
 
-      await addDoc(collection(db, 'videos'), {
+      // ++ ALTERAÇÃO AQUI ++ Guardamos os dados do novo vídeo
+      const newVideoData = {
         uid: currentUser.uid,
         userName: currentUser.displayName,
         avatarUrl: currentUser.photoURL || null,
@@ -48,11 +51,19 @@ const UploadModal = ({ onClose }) => {
         likes: 0,
         comments: 0,
         createdAt: serverTimestamp(),
-      });
+      };
 
-      alert('Vídeo postado com sucesso!');
+      const docRef = await addDoc(collection(db, 'videos'), newVideoData);
+
+      showToast('Vídeo postado com sucesso!');
+
+      // ++ ALTERAÇÃO AQUI ++ Chamamos a função do componente pai
+      if (onUploadSuccess) {
+        onUploadSuccess({ id: docRef.id, ...newVideoData });
+      }
+
       onClose();
-      window.location.reload();
+      // -- REMOVIDO -- window.location.reload();
     } catch (error) {
       console.error('Erro no upload: ', error);
       alert('Falha ao enviar o vídeo.');
@@ -68,13 +79,11 @@ const UploadModal = ({ onClose }) => {
         </button>
         <h2 className="text-2xl font-bold mb-4">Postar Vídeo</h2>
         <form onSubmit={handleUpload}>
-          {/* --- BLOCO DE CÓDIGO MODIFICADO --- */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
               Selecione o vídeo
             </label>
             <div className="grid grid-cols-2 gap-3">
-              {/* Botão para Gravar */}
               <button
                 type="button"
                 onClick={() => recordInputRef.current.click()}
@@ -83,7 +92,6 @@ const UploadModal = ({ onClose }) => {
                 <Camera size={24} className="mb-1" />
                 <span className="text-sm">Gravar</span>
               </button>
-              {/* Botão para Galeria */}
               <button
                 type="button"
                 onClick={() => galleryInputRef.current.click()}
@@ -93,7 +101,6 @@ const UploadModal = ({ onClose }) => {
                 <span className="text-sm">Galeria</span>
               </button>
             </div>
-            {/* Inputs de arquivo ficam escondidos */}
             <input
               ref={recordInputRef}
               type="file"
@@ -117,7 +124,6 @@ const UploadModal = ({ onClose }) => {
               </p>
             )}
           </div>
-          {/* --- FIM DO BLOCO MODIFICADO --- */}
 
           <div className="mb-4">
             <label htmlFor="caption" className="block text-sm font-medium mb-2">

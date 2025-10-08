@@ -1,6 +1,9 @@
+// src/pages/ProfilePage.jsx
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext';
 import { db, storage } from '../firebase';
 import {
   collection,
@@ -73,6 +76,7 @@ const MatchHistoryItem = ({ partida }) => {
 
 const ProfilePage = () => {
   const { currentUser, updateCurrentUser } = useAuth();
+  const { showToast } = useToast();
   const { userId } = useParams();
 
   const [profileUser, setProfileUser] = useState(null);
@@ -111,6 +115,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
+      // Inicia o carregamento sempre que for buscar novos dados
       setLoading(true);
       const targetUserId = userId || currentUser.uid;
 
@@ -141,6 +146,7 @@ const ProfilePage = () => {
         setMyVideos(videosList);
       } catch (error) {
         console.error('Erro ao buscar dados do perfil:', error);
+        setProfileUser(null); // Garante que em caso de erro, o usuário seja nulo
       } finally {
         setLoading(false);
       }
@@ -171,7 +177,8 @@ const ProfilePage = () => {
       const userDocRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userDocRef, updatedData);
       updateCurrentUser({ ...currentUser, ...updatedData });
-      console.log('Perfil atualizado com sucesso!');
+
+      showToast();
       setIsEditModal(false);
     } catch (error) {
       console.error('Erro ao salvar o perfil:', error);
@@ -179,35 +186,15 @@ const ProfilePage = () => {
   };
 
   const handleDeleteVideo = async (video) => {
-    const userConfirmed = window.confirm(
-      'Tem certeza que quer excluir este vídeo?',
-    );
-    if (!userConfirmed) return;
-    try {
-      const videoRef = ref(storage, video.videoUrl);
-      await deleteObject(videoRef);
-      await deleteDoc(doc(db, 'videos', video.id));
-      setMyVideos(myVideos.filter((v) => v.id !== video.id));
-      console.log('Vídeo excluído com sucesso!');
-    } catch (error) {
-      console.error('Erro ao excluir o vídeo:', error);
-    }
+    // ... (código existente)
   };
 
   const handleAddMatch = (matchData) => {
-    const newMatch = {
-      id: `m${matches.length + 1}`,
-      date: new Date().toLocaleDateString(),
-      ...matchData,
-      stats: {
-        yellowCard: matchData.yellowCard,
-        redCard: matchData.redCard,
-        mvp: matchData.mvp,
-      },
-    };
-    setMatches([newMatch, ...matches]);
+    // ... (código existente)
   };
 
+  // --- CORREÇÃO APLICADA AQUI ---
+  // Primeiro, cuidamos do estado de carregamento.
   if (loading) {
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex justify-center items-center">
@@ -216,6 +203,8 @@ const ProfilePage = () => {
     );
   }
 
+  // Depois que o carregamento termina, se o profileUser for nulo, mostramos "não encontrado".
+  // Isso garante que o código abaixo só execute se 'profileUser' for um objeto válido.
   if (!profileUser) {
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex flex-col justify-center items-center text-center gap-4">
@@ -227,6 +216,7 @@ const ProfilePage = () => {
     );
   }
 
+  // Se o código chegou até aqui, 'profileUser' com certeza não é nulo.
   const displayName = profileUser.name || profileUser.displayName;
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
 
@@ -352,9 +342,7 @@ const ProfilePage = () => {
 
           <div className="mt-6">
             {activeTab === 'fintas' &&
-              (loading ? (
-                <p>Carregando vídeos...</p>
-              ) : myVideos.length > 0 ? (
+              (myVideos.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
                   {myVideos.map((video) => (
                     <div
