@@ -10,8 +10,8 @@ import BottomNavBar from './BottomNavbar.jsx';
 import MobileHeader from './MobileHeader.jsx';
 import Chatbot from './Chatbot.jsx';
 import BackButton from './BackButton.jsx';
-import SuccessToast from './SuccessToast.jsx'; // 1. IMPORTAR O COMPONENTE DE TOAST
-import { useToast } from '../contexts/ToastContext.jsx'; // 2. IMPORTAR O HOOK
+import SuccessToast from './SuccessToast.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { Bot } from 'lucide-react';
 
@@ -37,9 +37,11 @@ const Layout = () => {
   const outlet = useOutlet();
   const { direction } = location.state || {};
   const { currentUser } = useAuth();
-  const isFintaPage = location.pathname === '/finta';
+  const { toast, hideToast } = useToast();
   const routes = ['/', '/courts', '/finta', '/minha-conta'];
-  const { toast, hideToast } = useToast(); // 3. USAR O HOOK PARA OBTER O ESTADO E A FUNÇÃO
+
+  // A constante 'isFintaPage' e a lógica condicional foram removidas.
+  const isFintaPage = location.pathname === '/finta';
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -60,7 +62,6 @@ const Layout = () => {
 
   return (
     <div className="w-full h-dvh bg-[var(--bg-color)] flex font-sans">
-      {/* 4. RENDERIZAR O TOAST AQUI */}
       <SuccessToast
         message={toast.message}
         isVisible={toast.isVisible}
@@ -72,6 +73,7 @@ const Layout = () => {
       <SideNavBar />
       <div
         className="flex-1 flex flex-col overflow-hidden relative"
+        // Os handlers agora são aplicados incondicionalmente, como antes.
         {...handlers}
       >
         <main

@@ -39,6 +39,7 @@ import EditProfileModal from '../components/EditProfileModal';
 import StatsDashboard from '../components/StatsDashboard';
 import PlayerRadarChart from '../components/PlayerRadarChart';
 import AddMatchModal from '../components/AddMatchModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { userMatches } from '../data/mockStats';
 
 const MatchHistoryItem = ({ partida }) => {
@@ -88,6 +89,9 @@ const ProfilePage = () => {
   const [matches, setMatches] = useState(userMatches);
   const [isAddMatchModalOpen, setIsAddMatchModalOpen] = useState(false);
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState(null);
+
   const radarData = [
     { subject: 'Ataque', A: 90, fullMark: 100 },
     { subject: 'Passe', A: 80, fullMark: 100 },
@@ -115,7 +119,6 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      // Inicia o carregamento sempre que for buscar novos dados
       setLoading(true);
       const targetUserId = userId || currentUser.uid;
 
@@ -146,7 +149,7 @@ const ProfilePage = () => {
         setMyVideos(videosList);
       } catch (error) {
         console.error('Erro ao buscar dados do perfil:', error);
-        setProfileUser(null); // Garante que em caso de erro, o usuário seja nulo
+        setProfileUser(null);
       } finally {
         setLoading(false);
       }
@@ -154,6 +157,9 @@ const ProfilePage = () => {
 
     if (currentUser) {
       fetchProfileData();
+    } else {
+      setLoading(false);
+      setProfileUser(null);
     }
   }, [userId, currentUser]);
 
@@ -185,16 +191,49 @@ const ProfilePage = () => {
     }
   };
 
-  const handleDeleteVideo = async (video) => {
-    // ... (código existente)
+  const promptDeleteVideo = (video) => {
+    setVideoToDelete(video);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteVideo = async () => {
+    if (!videoToDelete) return;
+
+    try {
+      const videoRef = ref(
+        storage,
+        videoToDelete.filePath || videoToDelete.videoUrl,
+      );
+      await deleteObject(videoRef);
+      await deleteDoc(doc(db, 'videos', videoToDelete.id));
+
+      setMyVideos(myVideos.filter((v) => v.id !== videoToDelete.id));
+      console.log('Vídeo excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir o vídeo:', error);
+      alert(
+        'Não foi possível excluir o vídeo. Verifique o console para mais detalhes.',
+      );
+    } finally {
+      setIsConfirmModalOpen(false);
+      setVideoToDelete(null);
+    }
   };
 
   const handleAddMatch = (matchData) => {
-    // ... (código existente)
+    const newMatch = {
+      id: `m${matches.length + 1}`,
+      date: new Date().toLocaleDateString(),
+      ...matchData,
+      stats: {
+        yellowCard: matchData.yellowCard,
+        redCard: matchData.redCard,
+        mvp: matchData.mvp,
+      },
+    };
+    setMatches([newMatch, ...matches]);
   };
 
-  // --- CORREÇÃO APLICADA AQUI ---
-  // Primeiro, cuidamos do estado de carregamento.
   if (loading) {
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex justify-center items-center">
@@ -203,8 +242,6 @@ const ProfilePage = () => {
     );
   }
 
-  // Depois que o carregamento termina, se o profileUser for nulo, mostramos "não encontrado".
-  // Isso garante que o código abaixo só execute se 'profileUser' for um objeto válido.
   if (!profileUser) {
     return (
       <div className="p-8 bg-[var(--bg-color)] text-white min-h-full flex flex-col justify-center items-center text-center gap-4">
@@ -216,7 +253,6 @@ const ProfilePage = () => {
     );
   }
 
-  // Se o código chegou até aqui, 'profileUser' com certeza não é nulo.
   const displayName = profileUser.name || profileUser.displayName;
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
 
@@ -342,7 +378,9 @@ const ProfilePage = () => {
 
           <div className="mt-6">
             {activeTab === 'fintas' &&
-              (myVideos.length > 0 ? (
+              (loading ? (
+                <p>Carregando vídeos...</p>
+              ) : myVideos.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
                   {myVideos.map((video) => (
                     <div
@@ -360,7 +398,7 @@ const ProfilePage = () => {
                       </div>
                       {isOwnProfile && (
                         <button
-                          onClick={() => handleDeleteVideo(video)}
+                          onClick={() => promptDeleteVideo(video)}
                           className="absolute top-1.5 right-1.5 bg-red-600/70 hover:bg-red-700 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Trash2 size={14} />
@@ -428,6 +466,14 @@ const ProfilePage = () => {
           onMatchSubmit={handleAddMatch}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmDeleteVideo}
+        title="Confirmar Exclusão"
+        message="Tem certeza que quer excluir este vídeo? Esta ação não pode ser desfeita."
+      />
     </>
   );
 };

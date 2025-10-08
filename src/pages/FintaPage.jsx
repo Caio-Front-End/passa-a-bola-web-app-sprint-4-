@@ -24,11 +24,9 @@ const FintaPage = () => {
     author: '',
   });
   const feedContainerRef = useRef(null);
-
-  // 1. ADICIONAR NOVO ESTADO PARA CONTROLAR A ROLAGEM
   const [shouldScrollToTop, setShouldScrollToTop] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
-  // ... (função formatVideoData e o primeiro useEffect de fetch) ...
   const formatVideoData = (videoDoc, usersMap) => {
     const videoData = videoDoc.data();
     const userProfile = usersMap[videoData.uid];
@@ -116,17 +114,12 @@ const FintaPage = () => {
     }
   }, [currentUser]);
 
-  // 2. CRIAR O useEffect QUE VAI OBSERVAR O ESTADO E REALIZAR A ROLAGEM
   useEffect(() => {
     if (shouldScrollToTop && feedContainerRef.current) {
-      feedContainerRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-      // Reseta o estado para não rolar novamente em futuras renderizações
+      feedContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       setShouldScrollToTop(false);
     }
-  }, [shouldScrollToTop]); // A dependência é o novo estado
+  }, [shouldScrollToTop]);
 
   const handleOpenComments = (videoId, author) => {
     setActiveCommentSection({ videoId, author });
@@ -155,8 +148,6 @@ const FintaPage = () => {
       isInitiallyLiked: false,
     };
     setVideos((prevVideos) => [fullNewVideoData, ...prevVideos]);
-
-    // 3. ATUALIZAR O ESTADO PARA 'true' PARA ATIVAR O useEffect
     setShouldScrollToTop(true);
   };
 
@@ -184,6 +175,7 @@ const FintaPage = () => {
             <div
               ref={feedContainerRef}
               className="h-full w-full overflow-y-auto snap-y snap-mandatory"
+              style={{ scrollSnapStop: 'always' }}
             >
               {videos.map((video) => (
                 <VideoPost
@@ -191,6 +183,8 @@ const FintaPage = () => {
                   videoData={video}
                   onCommentClick={handleOpenComments}
                   onVideoInView={handleVideoInView}
+                  isMuted={isMuted}
+                  onToggleMute={() => setIsMuted((prev) => !prev)}
                 />
               ))}
             </div>

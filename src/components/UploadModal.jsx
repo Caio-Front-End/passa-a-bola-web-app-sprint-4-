@@ -1,5 +1,3 @@
-// src/components/UploadModal.jsx
-
 import { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../contexts/ToastContext';
@@ -8,7 +6,6 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { X, UploadCloud, Trophy, Camera, Library } from 'lucide-react';
 
-// ++ ALTERAÇÃO AQUI ++ Recebemos a nova propriedade onUploadSuccess
 const UploadModal = ({ onClose, onUploadSuccess }) => {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -36,16 +33,18 @@ const UploadModal = ({ onClose, onUploadSuccess }) => {
     setUploading(true);
     try {
       const fileName = `${currentUser.uid}_${Date.now()}`;
-      const storageRef = ref(storage, `videos/${currentUser.uid}/${fileName}`);
+      const filePath = `videos/${currentUser.uid}/${fileName}`;
+      const storageRef = ref(storage, filePath);
+
       await uploadBytes(storageRef, file);
       const videoUrl = await getDownloadURL(storageRef);
 
-      // ++ ALTERAÇÃO AQUI ++ Guardamos os dados do novo vídeo
       const newVideoData = {
         uid: currentUser.uid,
         userName: currentUser.displayName,
         avatarUrl: currentUser.photoURL || null,
         videoUrl: videoUrl,
+        filePath: filePath, // O caminho do arquivo é salvo aqui
         caption: caption,
         championshipId: championshipId.trim(),
         likes: 0,
@@ -55,15 +54,13 @@ const UploadModal = ({ onClose, onUploadSuccess }) => {
 
       const docRef = await addDoc(collection(db, 'videos'), newVideoData);
 
-      showToast('Vídeo postado com sucesso!');
+      showToast();
 
-      // ++ ALTERAÇÃO AQUI ++ Chamamos a função do componente pai
       if (onUploadSuccess) {
         onUploadSuccess({ id: docRef.id, ...newVideoData });
       }
 
       onClose();
-      // -- REMOVIDO -- window.location.reload();
     } catch (error) {
       console.error('Erro no upload: ', error);
       alert('Falha ao enviar o vídeo.');
