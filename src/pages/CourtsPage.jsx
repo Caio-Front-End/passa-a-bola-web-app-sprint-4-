@@ -108,14 +108,14 @@ const CourtsPage = () => {
                 placeholder="Buscar por ID..."
                 value={filters.searchTerm}
                 onChange={handleFilterChange}
-                className="w-full pl-10 pr-3 py-2 bg-gray-700/50 rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
+                className="w-full pl-10 pr-3 py-2 bg-[#282833]  rounded-md text-white border border-gray-600 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] sm:text-sm"
               />
             </div>
             <select
               name="city"
               value={filters.city}
               onChange={handleFilterChange}
-              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
+              className="w-full p-2 bg-[#282833] rounded-md text-white border border-gray-600"
             >
               <option value="">Todas as Cidades</option>
               {uniqueCities.map((city) => (
@@ -128,7 +128,7 @@ const CourtsPage = () => {
               name="modality"
               value={filters.modality}
               onChange={handleFilterChange}
-              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
+              className="w-full p-2 bg-[#282833] rounded-md text-white border border-gray-600"
             >
               <option value="">Todas as Modalidades</option>
               <option value="futsal">Futsal</option>
@@ -139,7 +139,7 @@ const CourtsPage = () => {
               name="format"
               value={filters.format}
               onChange={handleFilterChange}
-              className="w-full p-2 bg-gray-700/50 rounded-md text-white border border-gray-600"
+              className="w-full p-2 bg-[#282833] rounded-md text-white border border-gray-600"
             >
               <option value="">Todos os Formatos</option>
               <option value="rachao">Rachão</option>
@@ -183,49 +183,54 @@ const CourtsPage = () => {
                 <button
                   key={champ.id}
                   onClick={() => setSelectedChampionship(champ)}
-                  className="bg-[var(--bg-color2)] p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 text-left hover:shadow-lg hover:border-[var(--primary-color)] border border-transparent transition-all"
-                >
-                  <div className="text-center bg-[var(--primary-color)] text-white rounded-lg p-3 w-full sm:w-auto">
-                    <p className="font-bold text-xl">
-                      {formattedDate.split(' ')[0]}
-                    </p>
-                    <p className="text-xs font-semibold uppercase">
-                      {formattedDate.split(' ')[1]}
-                    </p>
+                  className="bg-[var(--bg-color2)] border border-[#373746] p-4 rounded-lg shadow-lg flex items-center space-x-4 text-left w-full transition-all duration-300 hover:shadow-xl hover:shadow-[var(--primary-color)]/20 hover:border-[var(--primary-color)]/50"
+              >
+                  {/* Bloco da data: O estilo minimalista da Opção 3, mas com cores que combinam com este design. */}
+                  <div className="flex-shrink-0 text-center w-16">
+                      <p className="font-semibold text-sm uppercase text-[var(--primary-color)]">
+                          {formattedDate.split(' ')[1]}
+                      </p>
+                      <p className="font-bold text-3xl text-slate-200">
+                          {formattedDate.split(' ')[0]}
+                      </p>
                   </div>
+
+                  {/* Divisor vertical para separar a data do conteúdo principal */}
+                  <div className="w-px h-20 bg-[#373746]"></div>
+
+                  {/* Conteúdo principal */}
                   <div className="flex-grow">
-                    <h3 className="font-bold text-lg text-white">
-                      {champ.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-1">
-                      Organizado por: {champ.organizerName}
-                    </p>
-                    <p className="text-sm text-gray-400">{address}</p>
-                    <p className="text-sm text-gray-400 font-semibold">
-                      {champ.time}
-                    </p>
-                    <div className="flex items-center text-xs mt-2 space-x-3 flex-wrap gap-2">
-                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 capitalize">
-                        {champ.modality}
-                      </span>
-                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 capitalize">
-                        {champ.format.replace('-', ' ')}
-                      </span>
-                      <span className="bg-gray-700 px-2 py-1 rounded-full text-gray-300 font-bold">
-                        {champ.participants.length}/{champ.maxCapacity} vagas
-                      </span>
-                      <span
-                        className={`capitalize px-2 py-1 rounded-full ${
-                          champ.access === 'publico'
-                            ? 'bg-green-800/50 text-green-300'
-                            : 'bg-red-800/50 text-red-300'
-                        }`}
-                      >
-                        {champ.access}
-                      </span>
-                    </div>
+                      <h3 className="font-bold text-lg text-white">
+                          {champ.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-2">
+                          Organizado por: {champ.organizerName}
+                      </p>
+                      <p className="text-sm text-gray-400">{address} • {champ.time}</p>
+                      
+                      {/* Tags: As mesmas tags vibrantes da Opção 2 */}
+                      <div className="flex items-center text-xs mt-3 flex-wrap gap-2">
+                          <span className="bg-indigo-500/10 text-indigo-200/80 px-2.5 py-1 rounded-full capitalize font-medium">
+                              {champ.modality}
+                          </span>
+                          <span className="bg-purple-500/10 text-purple-200/80 px-2.5 py-1 rounded-full capitalize font-medium">
+                              {champ.format.replace('-', ' ')}
+                          </span>
+                          <span className="bg-sky-500/10 text-sky-200/80 px-2.5 py-1 rounded-full font-bold">
+                              {champ.participants.length}/{champ.maxCapacity} vagas
+                          </span>
+                          <span
+                              className={`capitalize px-2.5 py-1 rounded-full font-semibold ${
+                              champ.access === 'publico'
+                                  ? 'bg-green-500/20 text-green-300'
+                                  : 'bg-red-500/20 text-red-300'
+                              }`}
+                          >
+                              {champ.access}
+                          </span>
+                      </div>
                   </div>
-                </button>
+              </button>
               );
             })}
           </div>
