@@ -1,16 +1,20 @@
+// src/components/SubscriptionModal.jsx
+
 import { useState, useEffect } from 'react';
 import ModalWrapper from './ModalWrapper.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { useToast } from '../contexts/ToastContext.jsx'; // 1. IMPORTAR O HOOK
 import { db } from '../firebase.js';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
-import { CheckCircle, Info, XCircle, Users } from 'lucide-react';
+import { Info, XCircle, Users } from 'lucide-react';
 
 const SubscriptionModal = ({ championship, onClose }) => {
   const { currentUser } = useAuth();
+  const { showToast } = useToast(); // 2. INICIAR O HOOK
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [view, setView] = useState('confirm'); // confirm, select_team, success, full, alreadySubscribed
+  const [view, setView] = useState('confirm'); // Mantemos a lógica de view para os outros cenários
 
   useEffect(() => {
     const isAlreadySubscribed = championship.participants.some(
@@ -46,7 +50,8 @@ const SubscriptionModal = ({ championship, onClose }) => {
             name: currentUser.displayName || currentUser.name,
           }),
         });
-        setView('success');
+        showToast(); // 3. CHAMAR O TOAST
+        onClose(); // 4. FECHAR O MODAL
       } catch (e) {
         console.error('Erro ao se inscrever: ', e);
         setError('Ocorreu um erro ao processar sua inscrição.');
@@ -69,7 +74,6 @@ const SubscriptionModal = ({ championship, onClose }) => {
       const currentData = docSnap.data();
       const teams = currentData.teams || [];
       const teamToJoin = teams[teamIndex];
-
       const teamMaxCapacity =
         parseInt(championship.maxCapacity, 10) / teams.length;
 
@@ -91,7 +95,8 @@ const SubscriptionModal = ({ championship, onClose }) => {
         participants: arrayUnion(newPlayer),
       });
 
-      setView('success');
+      showToast(); // 3. CHAMAR O TOAST
+      onClose(); // 4. FECHAR O MODAL
     } catch (e) {
       console.error('Erro ao entrar no time: ', e);
       setError('Não foi possível entrar no time. Tente novamente.');
@@ -102,37 +107,38 @@ const SubscriptionModal = ({ championship, onClose }) => {
 
   const renderContent = () => {
     switch (view) {
-      case 'success':
-        return (
-          <div className="text-center">
-            <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
-            <h3 className="text-xl font-bold text-white">
-              Inscrição Confirmada!
-            </h3>
-            <p className="text-gray-400 mt-2">
-              Você está no campeonato "{championship.name}".
-            </p>
-          </div>
-        );
+      // O case 'success' foi removido, pois agora fechamos o modal
       case 'alreadySubscribed':
         return (
-          <div className="text-center">
+          <div className="text-center p-4">
             <Info size={48} className="mx-auto text-blue-500 mb-4" />
             <h3 className="text-xl font-bold text-white">
               Você já está neste campeonato!
             </h3>
+            <button
+              onClick={onClose}
+              className="mt-4 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Fechar
+            </button>
           </div>
         );
       case 'full':
         return (
-          <div className="text-center">
+          <div className="text-center p-4">
             <XCircle size={48} className="mx-auto text-red-500 mb-4" />
             <h3 className="text-xl font-bold text-white">Vagas Esgotadas!</h3>
+            <button
+              onClick={onClose}
+              className="mt-4 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Fechar
+            </button>
           </div>
         );
       case 'select_team':
         return (
-          <div>
+          <div className="p-6">
             <h3 className="text-xl font-bold text-white mb-4">
               Escolha seu Time
             </h3>
@@ -162,7 +168,7 @@ const SubscriptionModal = ({ championship, onClose }) => {
                     }
                     className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Entrar
+                    {loading ? 'Entrando...' : 'Entrar'}
                   </button>
                 </div>
               ))}
@@ -172,7 +178,7 @@ const SubscriptionModal = ({ championship, onClose }) => {
       case 'confirm':
       default:
         return (
-          <>
+          <div className="p-6">
             <h3 className="text-xl font-bold text-white mb-2">
               Confirmar Inscrição
             </h3>
@@ -199,14 +205,14 @@ const SubscriptionModal = ({ championship, onClose }) => {
             >
               {loading ? 'Verificando...' : 'Inscrever-se'}
             </button>
-          </>
+          </div>
         );
     }
   };
 
   return (
     <ModalWrapper title="Inscrição no Campeonato" onClose={onClose}>
-      <div className="p-6">{renderContent()}</div>
+      {renderContent()}
     </ModalWrapper>
   );
 };
