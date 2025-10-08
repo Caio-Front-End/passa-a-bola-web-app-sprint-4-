@@ -1,17 +1,37 @@
+// src/components/VideoPost.jsx
+
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../firebase';
-import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  increment,
+  arrayUnion,
+  arrayRemove,
+} from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
-import { Heart, MessageCircle, Send, VolumeX, Volume2, Trophy } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Send,
+  VolumeX,
+  Volume2,
+  Trophy,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
+const VideoPost = ({
+  videoData,
+  onCommentClick,
+  onVideoInView,
+  isMuted,
+  onToggleMute,
+}) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(videoData.isInitiallyLiked);
   const [likes, setLikes] = useState(videoData.likes);
-  const [isMuted, setIsMuted] = useState(() => window.isFintaVideoMuted ?? true);
   const [showVolumeIcon, setShowVolumeIcon] = useState(false);
   const videoRef = useRef(null);
   const [shouldPlay, setShouldPlay] = useState(false);
@@ -26,7 +46,7 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
           setShouldPlay(false);
         }
       },
-      { threshold: 0.7 }
+      { threshold: 0.7 },
     );
 
     const currentVideoRef = videoRef.current;
@@ -49,9 +69,9 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       videoElement.currentTime = 0;
       const playPromise = videoElement.play();
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
+        playPromise.catch((error) => {
           if (error.name !== 'AbortError') {
-            console.error("Erro ao tentar tocar o vídeo:", error);
+            console.error('Erro ao tentar tocar o vídeo:', error);
           }
         });
       }
@@ -74,16 +94,16 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       if (newIsLiked) {
         await updateDoc(videoDocRef, {
           likes: increment(1),
-          likedBy: arrayUnion(currentUser.uid)
+          likedBy: arrayUnion(currentUser.uid),
         });
       } else {
         await updateDoc(videoDocRef, {
           likes: increment(-1),
-          likedBy: arrayRemove(currentUser.uid)
+          likedBy: arrayRemove(currentUser.uid),
         });
       }
     } catch (error) {
-      console.error("Erro ao atualizar o like:", error);
+      console.error('Erro ao atualizar o like:', error);
       setIsLiked(!newIsLiked);
       setLikes(likes);
     }
@@ -101,13 +121,11 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
     }
   };
 
-  const toggleMute = (e) => {
+  const handleToggleMute = (e) => {
     if (e.target.closest('.action-button') || e.target.closest('a')) {
       return;
     }
-    const newMutedState = !isMuted;
-    setIsMuted(newMutedState);
-    window.isFintaVideoMuted = newMutedState;
+    onToggleMute();
     setShowVolumeIcon(true);
     setTimeout(() => setShowVolumeIcon(false), 800);
   };
@@ -115,7 +133,7 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
   return (
     <div
       className="relative h-full w-full snap-start flex-shrink-0 bg-black cursor-pointer"
-      onClick={toggleMute}
+      onClick={handleToggleMute}
     >
       <video
         ref={videoRef}
@@ -123,7 +141,6 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
         loop
         playsInline
         muted={isMuted}
-        // --- ALTERAÇÃO AQUI: De 'object-contain' de volta para 'object-cover' ---
         className="h-full w-full object-cover"
       ></video>
 
@@ -136,28 +153,41 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
       )}
 
       <div className="absolute bottom-0 left-0 right-0 p-2 text-white bg-gradient-to-t from-black/60 to-transparent">
-        <Link to={`/profile/${videoData.user.uid}`} className="flex items-center mb-2 group">
+        <Link
+          to={`/profile/${videoData.user.uid}`}
+          className="flex items-center mb-2 group"
+        >
           <img
             src={videoData.user.avatar}
             alt={videoData.user.name}
             className="w-10 h-10 rounded-full border-2 border-white group-hover:border-[var(--primary-color)] transition-colors"
           />
-          <p className="ml-3 font-semibold group-hover:text-[var(--primary-color)] transition-colors">{videoData.user.name}</p>
+          <p className="ml-3 font-semibold group-hover:text-[var(--primary-color)] transition-colors">
+            {videoData.user.name}
+          </p>
         </Link>
         <p className="text-sm">{videoData.caption}</p>
       </div>
 
       <div className="absolute right-2 bottom-24 flex flex-col items-center space-y-4 text-white">
-        <button onClick={handleLike} className="flex flex-col items-center action-button">
+        <button
+          onClick={handleLike}
+          className="flex flex-col items-center action-button"
+        >
           <Heart
             size={32}
             className={`transition-all ${
-              isLiked ? 'text-[var(--primary-color)] fill-[var(--primary-color)]' : 'text-white'
+              isLiked
+                ? 'text-[var(--primary-color)] fill-[var(--primary-color)]'
+                : 'text-white'
             }`}
           />
           <span className="text-xs font-semibold">{likes}</span>
         </button>
-        <button onClick={handleOpenComments} className="flex flex-col items-center action-button">
+        <button
+          onClick={handleOpenComments}
+          className="flex flex-col items-center action-button"
+        >
           <MessageCircle size={32} />
           <span className="text-xs font-semibold">{videoData.comments}</span>
         </button>
@@ -165,21 +195,21 @@ const VideoPost = ({ videoData, onCommentClick, onVideoInView }) => {
           <Send size={32} />
         </button>
         {videoData.championshipId && (
-            <motion.button 
-                onClick={handleChampionshipClick}
-                className="flex flex-col items-center action-button"
-                animate={{
-                    scale: [1, 1.1, 1, 1.1, 1],
-                    transition: {
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 1
-                    }
-                }}
-            >
-                <Trophy size={32} className="text-yellow-400"/>
-            </motion.button>
+          <motion.button
+            onClick={handleChampionshipClick}
+            className="flex flex-col items-center action-button"
+            animate={{
+              scale: [1, 1.1, 1, 1.1, 1],
+              transition: {
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 1,
+              },
+            }}
+          >
+            <Trophy size={32} className="text-yellow-400" />
+          </motion.button>
         )}
       </div>
     </div>
