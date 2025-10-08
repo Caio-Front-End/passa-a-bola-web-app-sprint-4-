@@ -193,6 +193,9 @@ const CourtsPage = () => {
                       <p className="font-bold text-3xl text-slate-200">
                           {formattedDate.split(' ')[0]}
                       </p>
+                      <p className="font-semibold p-1 text-sm text-gray-500">
+                          {champ.time}
+                      </p>
                   </div>
 
                   {/* Divisor vertical para separar a data do conteúdo principal */}
@@ -206,7 +209,7 @@ const CourtsPage = () => {
                       <p className="text-xs text-gray-500 mb-2">
                           Organizado por: {champ.organizerName}
                       </p>
-                      <p className="text-sm text-gray-400">{address} • {champ.time}</p>
+                      <p className="text-sm text-gray-400">{address}</p>
                       
                       {/* Tags: As mesmas tags vibrantes da Opção 2 */}
                       <div className="flex items-center text-xs mt-3 flex-wrap gap-2">
