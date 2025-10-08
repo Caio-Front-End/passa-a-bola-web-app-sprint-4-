@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+// src/pages/FintaPage.jsx
+
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
@@ -12,13 +14,58 @@ const FintaPage = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
-  const [activeCommentSection, setActiveCommentSection] = useState({ videoId: null, author: '' });
+  const [activeCommentSection, setActiveCommentSection] = useState({
+    videoId: null,
+    author: '',
+  });
   const { currentUser } = useAuth();
-  const [visibleVideoInfo, setVisibleVideoInfo] = useState({ id: null, author: '' });
+  const [visibleVideoInfo, setVisibleVideoInfo] = useState({
+    id: null,
+    author: '',
+  });
+  const feedContainerRef = useRef(null);
+
+  // 1. ADICIONAR NOVO ESTADO PARA CONTROLAR A ROLAGEM
+  const [shouldScrollToTop, setShouldScrollToTop] = useState(false);
+
+  // ... (função formatVideoData e o primeiro useEffect de fetch) ...
+  const formatVideoData = (videoDoc, usersMap) => {
+    const videoData = videoDoc.data();
+    const userProfile = usersMap[videoData.uid];
+    const name = userProfile?.name || videoData.userName;
+    const initial = name ? name.charAt(0).toUpperCase() : '?';
+    const avatar =
+      userProfile?.photoURL ||
+      videoData.avatarUrl ||
+      `https://placehold.co/40x40/b554b5/FFFFFF?text=${initial}`;
+    const isLikedByUser = videoData.likedBy?.includes(currentUser.uid) || false;
+
+    return {
+      id: videoDoc.id,
+      user: {
+        uid: videoData.uid,
+        name,
+        avatar,
+      },
+      videoUrl: videoData.videoUrl,
+      caption: videoData.caption,
+      likes: videoData.likes || 0,
+      comments: videoData.comments || 0,
+      isInitiallyLiked: isLikedByUser,
+      championshipId: videoData.championshipId || null,
+    };
+  };
 
   useEffect(() => {
-    if (activeCommentSection.videoId && visibleVideoInfo.id && activeCommentSection.videoId !== visibleVideoInfo.id) {
-      setActiveCommentSection({ videoId: visibleVideoInfo.id, author: visibleVideoInfo.author });
+    if (
+      activeCommentSection.videoId &&
+      visibleVideoInfo.id &&
+      activeCommentSection.videoId !== visibleVideoInfo.id
+    ) {
+      setActiveCommentSection({
+        videoId: visibleVideoInfo.id,
+        author: visibleVideoInfo.author,
+      });
     }
   }, [visibleVideoInfo, activeCommentSection.videoId]);
 
@@ -29,53 +76,34 @@ const FintaPage = () => {
         const videosCollectionRef = collection(db, 'videos');
         const q = query(videosCollectionRef, orderBy('createdAt', 'desc'));
         const videosSnapshot = await getDocs(q);
-        const videosList = videosSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
 
-        if (videosList.length === 0) {
+        if (videosSnapshot.empty) {
           setVideos([]);
           setLoading(false);
           return;
         }
 
-        const userIds = [...new Set(videosList.map((v) => v.uid).filter(Boolean))];
+        const userIds = [
+          ...new Set(
+            videosSnapshot.docs.map((doc) => doc.data().uid).filter(Boolean),
+          ),
+        ];
         let usersMap = {};
         if (userIds.length > 0) {
           const usersCollectionRef = collection(db, 'users');
-          const usersQuery = query(usersCollectionRef, where('__name__', 'in', userIds));
+          const usersQuery = query(
+            usersCollectionRef,
+            where('__name__', 'in', userIds),
+          );
           const usersSnapshot = await getDocs(usersQuery);
           usersSnapshot.forEach((doc) => {
             usersMap[doc.id] = doc.data();
           });
         }
 
-        const formattedData = videosList.map((video) => {
-          const userProfile = usersMap[video.uid];
-          const name = userProfile?.name || video.userName;
-          const initial = name ? name.charAt(0).toUpperCase() : '?';
-          const avatar =
-            userProfile?.photoURL ||
-            video.avatarUrl ||
-            `https://placehold.co/40x40/b554b5/FFFFFF?text=${initial}`;
-          const isLikedByUser = video.likedBy?.includes(currentUser.uid) || false;
-
-          return {
-            id: video.id,
-            user: {
-              uid: video.uid,
-              name,
-              avatar,
-            },
-            videoUrl: video.videoUrl,
-            caption: video.caption,
-            likes: video.likes || 0,
-            comments: video.comments || 0,
-            isInitiallyLiked: isLikedByUser,
-            championshipId: video.championshipId || null,
-          };
-        });
+        const formattedData = videosSnapshot.docs.map((doc) =>
+          formatVideoData(doc, usersMap),
+        );
         setVideos(formattedData);
       } catch (error) {
         console.error('Erro ao buscar vídeos do Firestore:', error);
@@ -88,6 +116,18 @@ const FintaPage = () => {
     }
   }, [currentUser]);
 
+  // 2. CRIAR O useEffect QUE VAI OBSERVAR O ESTADO E REALIZAR A ROLAGEM
+  useEffect(() => {
+    if (shouldScrollToTop && feedContainerRef.current) {
+      feedContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      // Reseta o estado para não rolar novamente em futuras renderizações
+      setShouldScrollToTop(false);
+    }
+  }, [shouldScrollToTop]); // A dependência é o novo estado
+
   const handleOpenComments = (videoId, author) => {
     setActiveCommentSection({ videoId, author });
   };
@@ -98,6 +138,26 @@ const FintaPage = () => {
 
   const handleVideoInView = (id, author) => {
     setVisibleVideoInfo({ id, author });
+  };
+
+  const handleUploadSuccess = (newVideoData) => {
+    const fullNewVideoData = {
+      ...newVideoData,
+      user: {
+        uid: currentUser.uid,
+        name: currentUser.displayName,
+        avatar:
+          currentUser.photoURL ||
+          `https://placehold.co/40x40/b554b5/FFFFFF?text=${currentUser.displayName.charAt(
+            0,
+          )}`,
+      },
+      isInitiallyLiked: false,
+    };
+    setVideos((prevVideos) => [fullNewVideoData, ...prevVideos]);
+
+    // 3. ATUALIZAR O ESTADO PARA 'true' PARA ATIVAR O useEffect
+    setShouldScrollToTop(true);
   };
 
   if (loading) {
@@ -120,11 +180,11 @@ const FintaPage = () => {
         </button>
 
         <div className="h-full w-full md:w-auto md:flex-shrink-0">
-          <div
-            // --- ALTERAÇÃO AQUI: De 'md:max-w-md' para 'md:max-w-lg' ---
-            className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-lg mx-auto"
-          >
-            <div className="h-full w-full overflow-y-auto snap-y snap-mandatory">
+          <div className="h-full bg-neutral-900 md:rounded-2xl overflow-hidden md:max-w-lg mx-auto">
+            <div
+              ref={feedContainerRef}
+              className="h-full w-full overflow-y-auto snap-y snap-mandatory"
+            >
               {videos.map((video) => (
                 <VideoPost
                   key={video.id}
@@ -181,7 +241,10 @@ const FintaPage = () => {
       </div>
 
       {isUploadModalOpen && (
-        <UploadModal onClose={() => setUploadModalOpen(false)} />
+        <UploadModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploadSuccess={handleUploadSuccess}
+        />
       )}
     </div>
   );
