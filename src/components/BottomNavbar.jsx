@@ -6,6 +6,7 @@ import { Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BottomNavBar = ({ onChatbotOpen, isChatbotOpen }) => {
+  const routes = ['/', '/courts', '/finta', '/minha-conta'];
   const { currentUser } = useAuth();
   const menuRef = useRef(null);
   const location = useLocation();
@@ -47,6 +48,13 @@ const BottomNavBar = ({ onChatbotOpen, isChatbotOpen }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleNavigation = (path) => {
+    const currentIndex = routes.indexOf(location.pathname);
+    const nextIndex = routes.indexOf(path);
+    const direction = nextIndex > currentIndex ? 'left' : 'right';
+    navigate(path, { state: { direction } });
+  };
+
   if (!currentUser) return null;
 
   return (
@@ -67,7 +75,7 @@ const BottomNavBar = ({ onChatbotOpen, isChatbotOpen }) => {
               <motion.button
                 layout="position"
                 key={item.label}
-                onClick={() => navigate(item.path)}
+                onClick={() => handleNavigation(item.path)} 
                 className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
                   isActive
                     ? 'text-[var(--primary-color)]'
@@ -98,7 +106,7 @@ const BottomNavBar = ({ onChatbotOpen, isChatbotOpen }) => {
               <motion.button
                 layout="position"
                 key={item.label}
-                onClick={() => navigate(item.path)}
+                onClick={() => handleNavigation(item.path)} 
                 className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
                   isActive
                     ? 'text-[var(--primary-color)]'
