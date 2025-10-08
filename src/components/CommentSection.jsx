@@ -29,7 +29,7 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
     const commentsQuery = query(
       collection(db, 'comments'),
       where('videoId', '==', videoId),
-      orderBy('createdAt', 'asc')
+      orderBy('createdAt', 'asc'),
     );
 
     const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
@@ -61,12 +61,12 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
         text: comment,
         createdAt: serverTimestamp(),
       });
-      
+
       const videoRef = doc(db, 'videos', videoId);
       await updateDoc(videoRef, {
-        comments: increment(1)
+        comments: increment(1),
       });
-      
+
       setComment('');
     } catch (error) {
       console.error('Erro ao postar comentário:', error);
@@ -75,17 +75,15 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Tem certeza que quer excluir este comentário?")) return;
-
     try {
-        await deleteDoc(doc(db, 'comments', commentId));
+      await deleteDoc(doc(db, 'comments', commentId));
 
-        const videoRef = doc(db, 'videos', videoId);
-        await updateDoc(videoRef, {
-            comments: increment(-1)
-        });
+      const videoRef = doc(db, 'videos', videoId);
+      await updateDoc(videoRef, {
+        comments: increment(-1),
+      });
     } catch (error) {
-        console.error("Erro ao deletar comentário:", error);
+      console.error('Erro ao deletar comentário:', error);
     }
   };
 
@@ -93,8 +91,10 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
     <div className="bg-[var(--bg-color2)] h-full flex flex-col w-full border-l border-gray-700/50 md:rounded-none rounded-t-2xl">
       <div className="p-4 border-b border-gray-700/50 flex justify-between items-center">
         <div>
-           <h2 className="text-xl font-bold text-white">Comentários</h2>
-           {videoAuthor && <p className="text-xs text-gray-400">do vídeo de @{videoAuthor}</p>}
+          <h2 className="text-xl font-bold text-white">Comentários</h2>
+          {videoAuthor && (
+            <p className="text-xs text-gray-400">do vídeo de @{videoAuthor}</p>
+          )}
         </div>
         <button onClick={onClose} className="text-gray-400 hover:text-white">
           <X size={24} />
@@ -110,7 +110,12 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
         {comments.map((c) => (
           <div key={c.id} className="flex items-start gap-3 mb-4">
             <img
-              src={c.avatarUrl || `https://placehold.co/40x40/b554b5/FFFFFF?text=${c.userName.charAt(0)}`}
+              src={
+                c.avatarUrl ||
+                `https://placehold.co/40x40/b554b5/FFFFFF?text=${c.userName.charAt(
+                  0,
+                )}`
+              }
               alt={c.userName}
               className="w-8 h-8 rounded-full object-cover"
             />
@@ -118,12 +123,10 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
               <p className="font-semibold text-white text-sm">{c.userName}</p>
               <p className="text-gray-300 text-sm break-words">{c.text}</p>
             </div>
-            
-            {/* --- ALTERAÇÃO AQUI --- */}
+
             {currentUser && currentUser.uid === c.uid && (
-              <button 
+              <button
                 onClick={() => handleDeleteComment(c.id)}
-                // Classes de hover/opacity removidas
                 className="text-gray-500 hover:text-red-500 transition-colors"
                 aria-label="Excluir comentário"
               >
@@ -135,7 +138,10 @@ const CommentSection = ({ videoId, videoAuthor, onClose }) => {
         <div ref={commentsEndRef} />
       </div>
 
-      <form onSubmit={handlePostComment} className="p-4 border-t border-gray-700/50 bg-[var(--bg-color2)]">
+      <form
+        onSubmit={handlePostComment}
+        className="p-4 border-t border-gray-700/50 bg-[var(--bg-color2)]"
+      >
         <div className="relative">
           <input
             type="text"
