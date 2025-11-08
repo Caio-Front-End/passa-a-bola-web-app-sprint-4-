@@ -123,3 +123,14 @@ A estrutura de pastas foi organizada para promover a escalabilidade e a manuten�
 ├── App.jsx       # Configuração principal das rotas
 ├── firebase.js   # Configuração e inicialização do Firebase
 └── main.jsx      # Ponto de entrada da aplicação React
+
+---
+
+## 👨‍💻 Desenvolvedores
+
+| Nome                           | Rede Social                                                                | RM's   |
+| ------------------------------ | -------------------------------------------------------------------------- | ------ |
+| Caio Nascimento Battista       | [LinkedIn](https://www.linkedin.com/in/cnbtt/)                             | 561383 |
+| Manoah Leão                    | [LinkedIn](https://www.linkedin.com/in/manoah-le%C3%A3o-735a83346/)        | 563713 |
+| Matheus Rodrigues              | [LinkedIn](https://www.linkedin.com/in/matheus-rodrigues-rocha-496921278/) | 561689 |
+| Lucas Cavalcante               | [LinkedIn](https://www.linkedin.com/in/lucas-cavalcante-jardim-67a875318/) | 562857 |
