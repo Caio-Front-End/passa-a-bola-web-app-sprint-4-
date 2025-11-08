@@ -123,6 +123,7 @@ A estrutura de pastas foi organizada para promover a escalabilidade e a manuten�
 ├── App.jsx       # Configuração principal das rotas
 ├── firebase.js   # Configuração e inicialização do Firebase
 └── main.jsx      # Ponto de entrada da aplicação React
+```
 
 ---
 
